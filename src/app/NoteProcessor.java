@@ -21,4 +21,8 @@ package app;
  */
 public class NoteProcessor {
 
+	public static void main(String[] args) {
+		
+		
+	}
 }
