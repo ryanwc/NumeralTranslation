@@ -1,5 +1,7 @@
 package app;
 
+import java.io.File;
+
 /**
  * Merchant's Guide to the Galaxy.
  * fly all over the galaxy to sell common metals and dirt 
@@ -21,8 +23,37 @@ package app;
  */
 public class NoteProcessor {
 
+	File rawNotes;
+	NoteParser parser;
+	IntergalacticLedger ledger;
+	QueryHandler qHandler;
+	Translator translator;
+	
+	/**
+	 * Initiate an interactive session with the specified
+	 * set of notes about the intergalactic commodity markets.
+	 * 
+	 * Parses notes, if given, and outputs stats, including
+	 * answers to any queries in the notes.
+	 * 
+	 * Interactive command line session can be used to query 
+	 * or to add new information.
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		
 		
 	}
+	
+	public NoteProcessor(File notes) {
+		
+		this.rawNotes = notes;
+		this.parser = new NoteParser();
+		this.ledger = new IntergalacticLedger();
+		this.qHandler = new QueryHandler();
+		this.translator = new Translator();
+	}
+	
+	
 }
