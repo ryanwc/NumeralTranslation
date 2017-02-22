@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import app.NoteParser.ParsedNote;
+
 /**
  * Bookkeep information about prices of various commodities.
  * 
@@ -60,6 +62,10 @@ public class Ledger {
 	
 	public String getIntergalPrice(String commodity) {
 		return priceBook.get(commodity).getIntergalPrice();
+	}
+	
+	public void recordCommDecl(ParsedNote pNote) {
+		// to do
 	}
 	
 	/**

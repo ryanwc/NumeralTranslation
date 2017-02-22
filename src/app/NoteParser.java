@@ -341,11 +341,7 @@ public class NoteParser {
 	 * @return true if the given string is a query, false otherwise.
 	 */
 	public boolean isQuery(ParsedNote note) {
-		return note.qPos == note.components.length-1 && 
-			note.countHow == 1 && note.howPos == 0 &&
-			(note.countMuch == 1 || note.countMany == 1) && 
-			(note.muchPos == 1 || note.manyPos == 1) &&
-			note.countIs == 1 && note.isPos > 1;
+		return note.qPos == note.components.length-1;
 	}
 	
 	/**

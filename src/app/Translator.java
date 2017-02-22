@@ -105,9 +105,9 @@ public class Translator {
 		String previous = rankToIntergalNum[rank];
 		if (previous != null) decoupleIntergalNum(previous, rank);
 		
-		rankToIntergalNum[rank] = baseRomanNum;
+		rankToIntergalNum[rank] = baseIntergalNum;
 		intergalNumRank.put(baseIntergalNum, rank);
-		rankToRomanNum[rank] = baseIntergalNum;
+		rankToRomanNum[rank] = baseRomanNum;
 		numPairs++;
 	}
 	
@@ -418,5 +418,21 @@ public class Translator {
 		}
 		
 		return portion;
+	}
+	
+	public String[] getRankToIntergalNum() {
+		return rankToIntergalNum;
+	}
+	
+	public Map<String, Integer> getIntergalNumRank() {
+		return intergalNumRank;
+	}
+	
+	public String[] getRankToRomanNum() {
+		return rankToRomanNum;
+	}
+	
+	private int getNumPairs() {
+		return numPairs;
 	}
 }

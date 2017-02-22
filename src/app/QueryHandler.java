@@ -24,4 +24,8 @@ public class QueryHandler {
 			 note.isPos < note.start2IntergalClust ||
 			 note.isPos < note.comm1Pos || note.isPos < note.comm2Pos);
 	 */
+	
+	public void answer(ParsedNote note) {
+		
+	}
 }
