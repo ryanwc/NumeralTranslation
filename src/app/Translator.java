@@ -21,10 +21,12 @@ public class Translator {
 	private String[] rankToIntergalNum;
 	private Map<String, Integer> intergalNumRank;
 	private String[] rankToRomanNum;
-	public static final Map<String, Integer> ROMAN_NUM_RANK;
+	private int numPairs;
 	
+	// static final for roman numeral vals because we know them
+	// and they should never change
+	public static final Map<String, Integer> ROMAN_NUM_RANK;
 	public static final int[] RANK_TO_VAL = {1, 5, 10, 50, 100, 500, 1000};
-
 	public static final String[] NO_REPEATS = {"V", "L", "D"};
 	public static final Set<String> NO_REPEAT_SET = 
 			new HashSet<String>(Arrays.asList(NO_REPEATS));
@@ -32,9 +34,8 @@ public class Translator {
 	public static final Set<String> SUBTRACTOR_SET = 
 			new HashSet<String>(Arrays.asList(SUBTRACTORS));
 	public static final Map<String, Set<String>> MINUENDS;
-	
-	private int numPairs;
-			
+		
+	// static final initialization for maps
 	static {
         Map<String, Integer> numMap = new HashMap<String, Integer>();
         String[] nums = {"I", "V", "X", "L", "C", "D", "M"};
@@ -61,6 +62,10 @@ public class Translator {
         MINUENDS = Collections.unmodifiableMap(minuends);
     }
 	
+	/**
+	 * Create a new Translator with no knowledge of any
+	 * intergalactic to roman numeral conversions.
+	 */
 	public Translator() {
 		this.rankToIntergalNum = new String[ROMAN_NUM_RANK.size()];
 		this.intergalNumRank = new HashMap<String, Integer>();
@@ -177,34 +182,40 @@ public class Translator {
 	/**
 	 * Convert a roman numeral to an arabic numeral.
 	 * 
+	 * Relies on helper method to recursively calculate the value
+	 * of smaller pieces of the numeral.
+	 * 
 	 * @param romanNumeral is a string: the roman numeral to convert
-	 * @throws IllegalArgumentException if the given string is not
-	 * a well-formed roman numeral and NullPointerException if given
-	 * string is null
-	 * @return an int representing the given roman numeral
+	 * @throws IllegalArgumentException if the given string is less than
+	 * length 1
+	 * @return an int: the value of the given roman numeral
 	 */
 	public static int romanNumToArabic(String romanNumeral) {
-		return romanNumToArabicRecurse(romanNumeral, 0, 
+		if (romanNumeral.length() < 1)
+			throw new IllegalArgumentException("Roman numeral can't be empty");
+		return romanNumToArabicRecurse(romanNumeral,
 				new boolean[RANK_TO_VAL.length][2]);
 	}
 
 	/**
 	 * Helper method to recursively convert a roman numeral to 
-	 * an arabic numeral
+	 * an arabic numeral.
 	 * 
-	 * @param romanNumeral
+	 * @param romanNumeral is a string: the roman numeral to convert
 	 * @param total
 	 * @param used
-	 * @return
+	 * @throws NullPointerException if the roman numeral is null, and
+	 * IllegalArgumentException if the roman numeral is not well formed
+	 * @return 
 	 */
 	private static int romanNumToArabicRecurse(String romanNumeral, 
-			int total, boolean[][] used) {
+			boolean[][] used) {
 		
 		if (romanNumeral == null)
 			throw new NullPointerException("Roman numeral can't be null");
 		
-		// base case
-		if (romanNumeral.length() < 1) return total;
+		// base case is empty string
+		if (romanNumeral.length() < 1) return 0;
 		
 		// check if next portion of given romanNumeral satisfies rules
 		// add to total and recurse if so, throw exception if not
@@ -256,6 +267,7 @@ public class Translator {
 		// any previously processed numerals
 		// then, set the values for the next recursive call.
 		String subRomanNum = "";
+		int thisValue = 0;
 		if (secondBase != null) {
 			
 			if (used[firstBaseRank][1])
@@ -270,7 +282,7 @@ public class Translator {
 			
 			if (MINUENDS.get(firstBase).contains(secondBase)) {
 				
-				total += secondBaseVal-firstBaseVal;
+				thisValue = secondBaseVal-firstBaseVal;
 				subRomanNum = romanNumeral.substring(numInRow+1);
 				
 				// subtractor and minuend can't be used in another subtraction
@@ -282,7 +294,7 @@ public class Translator {
 			else {
 				throw new IllegalArgumentException("Roman numeral is "
 						+ "not well formed: '" + firstBase + "' can only be"
-						+ " subtracted from " + MINUENDS.get(firstBaseVal));
+						+ " subtracted from " + MINUENDS.get(firstBase));
 			}
 		}
 		else {
@@ -293,11 +305,11 @@ public class Translator {
 						+ "starting at " + romanNumeral);
 			
 			subRomanNum = romanNumeral.substring(numInRow);	
-			total += numInRow*firstBaseVal;
+			thisValue = numInRow*firstBaseVal;
 			used[firstBaseRank][0] = true;
 		}
 
-		return romanNumToArabicRecurse(subRomanNum, total, used);
+		return thisValue+romanNumToArabicRecurse(subRomanNum, used);
 	}
 	
 	/**
