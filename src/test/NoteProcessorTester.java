@@ -52,5 +52,8 @@ public class NoteProcessorTester {
     	
     	assertEquals(14, Translator.romanNumToArabic("XIV"));
     	assertEquals(15, Translator.romanNumToArabic("XV"));
+    	
+    	assertEquals(2006, Translator.romanNumToArabic("MMVI"));
+    	assertEquals(1944, Translator.romanNumToArabic("MCMXLIV"));
     }
 }
