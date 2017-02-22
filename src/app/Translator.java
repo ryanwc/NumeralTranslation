@@ -15,23 +15,50 @@ import java.util.HashSet;
  */
 public class Translator {
 	
-	// simulate a bi-directional hashmap with two arrays of strings
-	// and two maps of {string: array index}
+	// keep intergalNum-romanNum translations as a 
+	// simulated bi-directional hashmap (two arrays of numStrings
+	// and two maps of {numString: Integer rank/arrayIndex})
 	private String[] rankToIntergalNum;
 	private Map<String, Integer> intergalNumRank;
 	private String[] rankToRomanNum;
 	public static final Map<String, Integer> ROMAN_NUM_RANK;
 	
+	public static final int[] RANK_TO_VAL = {1, 5, 10, 50, 100, 500, 1000};
+
+	public static final String[] NO_REPEATS = {"V", "L", "D"};
+	public static final Set<String> NO_REPEAT_SET = 
+			new HashSet<String>(Arrays.asList(NO_REPEATS));
+	public static final String[] SUBTRACTORS = {"I", "X", "C"};
+	public static final Set<String> SUBTRACTOR_SET = 
+			new HashSet<String>(Arrays.asList(SUBTRACTORS));
+	public static final Map<String, Set<String>> MINUENDS;
+	
 	private int numPairs;
 			
-	// allow easy conversion from base roman numeral to rank
 	static {
-        Map<String, Integer> map = new HashMap<String, Integer>();
-        String[] nums = new String[] {"I", "V", "X", "L", "C", "D", "M"};
-        for (int i = 0; i < nums.length; i++) {
-            map.put(nums[i], i);
-        }
-        ROMAN_NUM_RANK = Collections.unmodifiableMap(map);
+        Map<String, Integer> numMap = new HashMap<String, Integer>();
+        String[] nums = {"I", "V", "X", "L", "C", "D", "M"};
+        for (int i = 0; i < nums.length; i++)
+            numMap.put(nums[i], i);
+        ROMAN_NUM_RANK = Collections.unmodifiableMap(numMap);
+        
+        Map<String, Set<String>> minuends = 
+        		new HashMap<String, Set<String>>();
+        Set<String> i = new HashSet<String>();
+        Set<String> x = new HashSet<String>();
+        Set<String> c = new HashSet<String>();
+        
+        i.add("V");
+        i.add("X");
+        x.add("L");
+        x.add("C");
+        c.add("D");
+        c.add("M");
+        
+        minuends.put("I", i);
+        minuends.put("X", x);
+        minuends.put("C", c);
+        MINUENDS = Collections.unmodifiableMap(minuends);
     }
 	
 	public Translator() {
@@ -129,6 +156,7 @@ public class Translator {
 		numPairs--;
 	}
 	
+	/*
 	public int intergalNumToArabic(String intergalNum) {
 
 	}
@@ -144,46 +172,132 @@ public class Translator {
 	public String romanNumToIntergal(String romanNum) {
 		
 	}
+	*/
 	
 	/**
-	 * Convert a roman numeral to arabic numeral.
+	 * Convert a roman numeral to an arabic numeral.
 	 * 
 	 * @param romanNumeral is a string: the roman numeral to convert
 	 * @throws IllegalArgumentException if the given string is not
-	 * a well-formed roman numeral
+	 * a well-formed roman numeral and NullPointerException if given
+	 * string is null
 	 * @return an int representing the given roman numeral
 	 */
 	public static int romanNumToArabic(String romanNumeral) {
+		return romanNumToArabicRecurse(romanNumeral, 0, 
+				new boolean[RANK_TO_VAL.length][2]);
+	}
+
+	/**
+	 * Helper method to recursively convert a roman numeral to 
+	 * an arabic numeral
+	 * 
+	 * @param romanNumeral
+	 * @param total
+	 * @param used
+	 * @return
+	 */
+	private static int romanNumToArabicRecurse(String romanNumeral, 
+			int total, boolean[][] used) {
 		
-		/*
-		 * Roman numerals are based on seven symbols:
-		 * Symbol	I	V	X	L	C	D	M
-		 * Value	1	5	10	50	100	500	1,000
-		 * 
-		 * Numbers are formed by combining symbols together and adding the values. 
-		 * For example, MMVI is 1000 + 1000 + 5 + 1 = 2006. 
-		 * Generally, symbols are placed in order of value, starting with the 
-		 * largest values. When smaller values precede larger values, 
-		 * the smaller values are subtracted from the larger values, and the 
-		 * result is added to the total. 
-		 * For example MCMXLIV = 1000 + (1000 - 100) + (50 - 10) + (5 - 1) = 1944.
-		 * 
-		 * Rules:
-		 * 1. The symbols "I", "X", "C", and "M" can be repeated three times in 
-		 * succession, but no more. (They may appear four times if the third and 
-		 * fourth are separated by a smaller value, such as XXXIX.) "D", "L", and 
-		 * "V" can never be repeated.
-		 * 2. "I" can be subtracted from "V" and "X" only. "X" can be subtracted 
-		 * from "L" and "C" only. "C" can be subtracted from "D" and "M" only. "V", 
-		 * "L", and "D" can never be subtracted.
-		 * 3. Only one small-value symbol may be subtracted from any 
-		 * large-value symbol.
-		 * 4. A number written in Arabic numerals can be broken into digits. 
-		 * For example, 1903 is composed of 1, 9, 0, and 3. To write the Roman 
-		 * numeral, each of the non-zero digits should be treated separately. 
-		 * In the above example, 1,000 = M, 900 = CM, and 3 = III. 
-		 * Therefore, 1903 = MCMIII.
-		 */
+		if (romanNumeral == null)
+			throw new NullPointerException("Roman numeral can't be null");
+		
+		// base case
+		if (romanNumeral.length() < 1) return total;
+		
+		// check if next portion of given romanNumeral satisfies rules
+		// add to total and recurse if so, throw exception if not
+		String firstBase = romanNumeral.substring(0, 1);
+		
+		if (!ROMAN_NUM_RANK.containsKey(firstBase)) {
+			throw new IllegalArgumentException("Roman numeral is not "
+					+ "well formed: '" + firstBase + "' is not a "
+					+ "base roman numeral.");			
+		}
+		
+		int numInRow = 1;
+		while (numInRow < romanNumeral.length() &&
+		       romanNumeral.charAt(numInRow) == firstBase.charAt(0))
+			numInRow++;
+		
+		// check against roman numeral rules
+		
+		// check repeat limits
+		if (numInRow > 3)
+			throw new IllegalArgumentException("Roman numeral is not well "
+					+ "formed: '" + firstBase + "' appears more than three"
+					+ " times in succession.");
+		
+		if (NO_REPEAT_SET.contains(firstBase)) {
+			if (numInRow > 1)
+				throw new IllegalArgumentException("Roman numeral is not "
+						+ "well formed: '" + firstBase + "' appears "
+						+ "more than once.");
+		}
+		
+		// check if a subtraction
+		int firstBaseRank = ROMAN_NUM_RANK.get(firstBase);
+		int firstBaseVal = RANK_TO_VAL[firstBaseRank];
+		String secondBase = null;
+		int secondBaseRank = -1;
+		int secondBaseVal = -1;
+		if (SUBTRACTOR_SET.contains(firstBase)) {
+			if (numInRow == 1 && romanNumeral.length() > 1) {
+				secondBase = romanNumeral.substring(1, 2);
+				secondBaseRank = ROMAN_NUM_RANK.get(secondBase);
+				secondBaseVal = RANK_TO_VAL[secondBaseRank];
+				if (secondBaseRank < firstBaseRank)
+					secondBase = null; // not a subtraction
+			}
+		}
+		
+		// now check against subtraction rules (if necessary) and
+		// any previously processed numerals
+		// then, set the values for the next recursive call.
+		String subRomanNum = "";
+		if (secondBase != null) {
+			
+			if (used[firstBaseRank][1])
+				throw new IllegalArgumentException("Roman numeral is "
+						+ "not well formed: '" + firstBase + "' was "
+						+ "already used as a subtractor.");
+			
+			if (used[secondBaseRank][1])
+				throw new IllegalArgumentException("Roman numeral is "
+						+ "not well formed: '" + secondBase + "' was "
+						+ "already used as a minuend.");
+			
+			if (MINUENDS.get(firstBase).contains(secondBase)) {
+				
+				total += secondBaseVal-firstBaseVal;
+				subRomanNum = romanNumeral.substring(numInRow+1);
+				
+				// subtractor and minuend can't be used in another subtraction
+				used[firstBaseRank][1] = true;
+				used[secondBaseRank][1] = true;
+				// a minuend can't be used on its own after used as minuend
+				used[secondBaseRank][0] = true; 
+			}
+			else {
+				throw new IllegalArgumentException("Roman numeral is "
+						+ "not well formed: '" + firstBase + "' can only be"
+						+ " subtracted from " + MINUENDS.get(firstBaseVal));
+			}
+		}
+		else {
+			
+			if (used[firstBaseRank][0])
+				throw new IllegalArgumentException("Roman numeral is not "
+						+ "well formed: '" + firstBase + "' can't be used "
+						+ "starting at " + romanNumeral);
+			
+			subRomanNum = romanNumeral.substring(numInRow);	
+			total += numInRow*firstBaseVal;
+			used[firstBaseRank][0] = true;
+		}
+
+		return romanNumToArabicRecurse(subRomanNum, total, used);
 	}
 	
 	/**
@@ -196,5 +310,11 @@ public class Translator {
 	 */
 	public static String arabicNumToRoman(int arabicNumeral) {
 		
+		 // A number written in Arabic numerals can be broken into digits. 
+		 // For example, 1903 is composed of 1, 9, 0, and 3. To write the Roman 
+		 // numeral, each of the non-zero digits should be treated separately. 
+		 // In the above example, 1,000 = M, 900 = CM, and 3 = III. 
+		 // Therefore, 1903 = MCMIII.
+		return "";
 	}
 }

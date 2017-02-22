@@ -78,7 +78,7 @@ public class NoteParser {
 	 * false otherwise.
 	 */
 	public boolean isNumberDecl(String note) {
-		
+		return false;
 	}
 	
 	/**
@@ -90,7 +90,7 @@ public class NoteParser {
 	 * false otherwise.
 	 */
 	public boolean isCommodityDecl(String note) {
-		
+		return false;
 	}
 	
 	/**
@@ -101,6 +101,6 @@ public class NoteParser {
 	 * @return true if the given string is a query, false otherwise.
 	 */
 	public boolean isQuery(String note) {
-		
+		return false;
 	}
 }
