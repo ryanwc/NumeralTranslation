@@ -43,7 +43,6 @@ public class NoteProcessor {
 	 */
 	public static void main(String[] args) {
 		
-		
 	}
 	
 	public NoteProcessor(File notes) {

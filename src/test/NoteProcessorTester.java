@@ -1,9 +1,20 @@
 package test;
 
 import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Test;
 
+import app.NoteParser;
 import app.Translator;
+import app.NoteParser.ParsedNote;
 
 /**
  * Unit test processing notes about intergalactic commodity markets.
@@ -18,6 +29,7 @@ public class NoteProcessorTester {
 		NoteProcessorTester test = new NoteProcessorTester();
 		
 		// unit testing for parsing
+		test.testParsing();
 		
 		// unit testing for queries
 		
@@ -30,6 +42,41 @@ public class NoteProcessorTester {
 		// unit testing for processing entire set of notes
 		
 	}
+	
+    @Test
+    public void testParsing() {
+    	
+    	NoteParser parser = new NoteParser();
+    	
+        String fileName = "test_data/intergal_test1.txt";
+        String note = null;
+        ArrayList<String> notes = new ArrayList<String>();
+
+        try {
+            FileReader fR = new FileReader(fileName);
+            BufferedReader bR = new BufferedReader(fR);
+
+            while((note = bR.readLine()) != null)
+                notes.add(note);
+
+            bR.close();         
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println("Unable to open file '" + fileName + "'");            
+        }
+        catch(IOException ex) {               
+            ex.printStackTrace();
+        }
+    	
+    	// basic tests
+        Map<Integer, List<ParsedNote>> parsedNotes = 
+        		parser.parseNotes(notes);
+        
+    	for (Integer type : parsedNotes.keySet()) {
+    		for (ParsedNote pNote: parsedNotes.get(type))
+    			System.out.println(pNote.toString());
+    	}
+    }
 
     @Test
     public void testRomanNumToArabicNum() {

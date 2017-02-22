@@ -190,12 +190,13 @@ public class Translator {
 	 * 
 	 * @param romanNumeral is a string: the roman numeral to convert
 	 * @throws IllegalArgumentException if the given string is less than
-	 * length 1
+	 * length 1 or if each character is not a base roman numeral
 	 * @return an int: the value of the given roman numeral
 	 */
 	public static int romanNumToArabic(String romanNumeral) {
 		if (romanNumeral.length() < 1)
 			throw new IllegalArgumentException("Roman numeral can't be empty");
+		// sanity check each char is a base roman numeral before starting
 		return romanNumToArabicRecurse(romanNumeral,
 				new boolean[RANK_TO_VAL.length][2]);
 	}
@@ -261,6 +262,13 @@ public class Translator {
 		if (SUBTRACTOR_SET.contains(firstBase)) {
 			if (numInRow == 1 && romanNumeral.length() > 1) {
 				secondBase = romanNumeral.substring(1, 2);
+				
+				if (!ROMAN_NUM_RANK.containsKey(secondBase)) {
+					throw new IllegalArgumentException("Roman numeral is not "
+							+ "well formed: '" + secondBase + "' is not a "
+							+ "base roman numeral.");			
+				}
+				
 				secondBaseRank = ROMAN_NUM_RANK.get(secondBase);
 				secondBaseVal = RANK_TO_VAL[secondBaseRank];
 				if (secondBaseRank < firstBaseRank)
