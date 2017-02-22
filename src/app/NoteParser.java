@@ -14,12 +14,13 @@ import java.util.Map;
 public class NoteParser {
 
 	public static final int UNKNOWN = -1;
-	public static final int NUMBER_DECL = 0;
-	public static final int COMMODITY_DECL = 1;
-	public static final int QUERY = 2;
+	public static final int BASE_NUM_DECL = 0;
+	public static final int COMPOSITE_NUM_DECL = 1;
+	public static final int COMMODITY_DECL = 2;
+	public static final int QUERY = 3;
 	
-	public static final int[] NOTE_TYPES = {UNKNOWN, NUMBER_DECL, 
-			COMMODITY_DECL, QUERY};
+	public static final int[] NOTE_TYPES = {UNKNOWN, BASE_NUM_DECL, 
+			COMPOSITE_NUM_DECL, COMMODITY_DECL, QUERY};
 	
 	/**
 	 * Parses information about the intergalactic commodity markets.
@@ -61,24 +62,72 @@ public class NoteParser {
 	 */
 	public int getNoteType(String note) {
 		
-		if (isNumberDecl(note)) return NUMBER_DECL;
-		if (isCommodityDecl(note)) return COMMODITY_DECL;
 		if (isQuery(note)) return QUERY;
+		
+		String[] noteWords = note.split("[^a-zA-Z_0-9]");
+		if (isBaseNumDecl(noteWords)) return BASE_NUM_DECL;
+		if (isCompositeNumDecl(noteWords)) return COMPOSITE_NUM_DECL;
+		if (isCommodityDecl(noteWords)) return COMMODITY_DECL;
 		
 		// note does not conform to any known note types
 		return UNKNOWN;
 	}
 	
 	/**
-	 * Determine whether a string is a number declaration.
+	 * Determine whether a string is a base number declaration.
 	 * 
-	 * @param note is a string formatted as single line from 
-	 * intergalactic commodity notes
-	 * @return true if the given string is a number declaration,
+	 * Base number declarations have three words, in order:
+	 * 1) the intergalactic base number, 2) 'is', and 3) a base roman numeral.
+	 * 
+	 * Intergalactic base numbers are assumed to be entirely 
+	 * alphabetic and lowercase.
+	 * 
+	 * @param note is a string array made of the words from a single line
+	 * of notes about intergalactic commodities
+	 * @return true if the given note is a base number declaration,
 	 * false otherwise.
 	 */
-	public boolean isNumberDecl(String note) {
-		return false;
+	private boolean isBaseNumDecl(String[] noteWords) {
+		return noteWords.length == 3 && 
+			   !noteWords[0].matches("[0-9_A-Z]") &&
+			   noteWords[1].equals("is") &&
+			   Translator.ROMAN_NUM_RANK.containsKey(noteWords[2]);
+	}
+	
+	/**
+	 * Determine whether a string is a composite number declaration.
+	 * 
+	 * Composite number declarations have three components, in order:
+	 * 1) two or more intergalactic base numbers in a row, 
+	 * 2) the word 'is', and 3) a composite roman numeral.
+	 * 
+	 * Intergalactic base numbers are assumed to be entirely 
+	 * alphabetic and lowercase.
+	 * 
+	 * @param note is a string array made of the words from a single line
+	 * of notes about intergalactic commodities
+	 * @return true if the given note is a composite number declaration,
+	 * false otherwise.
+	 */
+	private boolean isCompositeNumDecl(String[] noteWords) {
+		
+		if (noteWords.length < 4) return false;
+		
+		// well formed roman numeral check
+		try {
+			Translator.romanNumToArabic(noteWords[noteWords.length-1]);
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+		
+		// is check
+		if (!noteWords[noteWords.length-2].equals("is")) return false;
+		
+		// intergalactic alphabetic check
+		for (int i = 0; i < noteWords.length-2; i++)
+			if (noteWords[i].matches("[0-9_A-Z]")) return false;
+			
+		return true;
 	}
 	
 	/**
@@ -89,7 +138,7 @@ public class NoteParser {
 	 * @return true if the given string is a commodity declaration,
 	 * false otherwise.
 	 */
-	public boolean isCommodityDecl(String note) {
+	public boolean isCommodityDecl(String[] note) {
 		return false;
 	}
 	
@@ -101,6 +150,6 @@ public class NoteParser {
 	 * @return true if the given string is a query, false otherwise.
 	 */
 	public boolean isQuery(String note) {
-		return false;
+		return note.charAt(note.length()-1) == '?';
 	}
 }

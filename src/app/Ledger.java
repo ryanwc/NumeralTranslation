@@ -2,11 +2,12 @@ package app;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Bookkeep information about prices of various commodities.
  * 
- * Prices are reported in dollars and/or intergalactic currency.
+ * Prices are reported in credits and/or intergalactic currency.
  * 
  * @author ryanwilliamconnor
  *
@@ -19,28 +20,42 @@ public class Ledger {
 		this.priceBook = new HashMap<String, PricePair>();
 	}
 	
+	public Ledger(Set<String> entries) {
+		this.priceBook = new HashMap<String, PricePair>();
+		for (String entry : entries)
+			createLedgerEntry(entry);
+	}
+	
 	public Map<String, PricePair> getPriceBook() {
 		return priceBook;
+	}
+	
+	public void createLedgerEntry(String commodity) {
+		priceBook.put(commodity, new PricePair(null, null));
 	}
 	
 	public void setPriceBook(Map<String, PricePair> priceBook) {
 		this.priceBook = priceBook;
 	}
 	
-	public void setDollarPrice(String commodity, int price) {
+	public void setCreditPrice(String commodity, Integer price) {
+		if (!priceBook.containsKey(commodity))
+			createLedgerEntry(commodity);
 		PricePair pair = priceBook.get(commodity);
-		pair.setDollarPrice(price);
+		pair.setCreditPrice(price);
 		priceBook.put(commodity, pair);
 	}
 	
 	public void setIntergalPrice(String commodity, String price) {
+		if (!priceBook.containsKey(commodity))
+			createLedgerEntry(commodity);
 		PricePair pair = priceBook.get(commodity);
 		pair.setIntergalPrice(price);
 		priceBook.put(commodity, pair);
 	}
 	
-	public int getDollarPrice(String commodity) {
-		return priceBook.get(commodity).getDollarPrice();
+	public Integer getCreditPrice(String commodity) {
+		return priceBook.get(commodity).getCreditPrice();
 	}
 	
 	public String getIntergalPrice(String commodity) {
@@ -48,24 +63,24 @@ public class Ledger {
 	}
 	
 	/**
-	 * A tuple of (int:dollar price, String:intergalactice price). 
+	 * A tuple of (int:credit price, String:intergalactice price). 
 	 */
 	class PricePair {
 		
-		private Integer dollarPrice; // Integer so can be null
+		private Integer creditPrice; // Integer so can be null
 		private String intergalPrice;
 		
-		public PricePair(int dollarPrice, String intergalPrice) {
-			this.dollarPrice = dollarPrice;
+		public PricePair(Integer creditPrice, String intergalPrice) {
+			this.creditPrice = creditPrice;
 			this.intergalPrice = intergalPrice;
 		}
 		
-		public Integer getDollarPrice() {
-			return dollarPrice;
+		public Integer getCreditPrice() {
+			return creditPrice;
 		}
 		
-		public void setDollarPrice(int price) {
-			this.dollarPrice = price;			
+		public void setCreditPrice(Integer price) {
+			this.creditPrice = price;			
 		}
 		
 		public String getIntergalPrice() {
@@ -74,6 +89,10 @@ public class Ledger {
 		
 		public void setIntergalPrice(String intergalPrice) {
 			this.intergalPrice = intergalPrice;			
+		}
+		
+		public String toString() {
+			return "(" + intergalPrice;
 		}
 	}
 }

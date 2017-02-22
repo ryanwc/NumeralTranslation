@@ -10,6 +10,10 @@ import java.util.HashSet;
 /**
  * Translate values from one unit system to another.
  * 
+ * Handles Roman <-> arabic numeral conversion statically.
+ * Needs to learn Roman <-> intergalactic numerals and 
+ * arabic <-> intergalactic numerals.
+ * 
  * @author ryanwilliamconnor
  *
  */
@@ -23,8 +27,7 @@ public class Translator {
 	private String[] rankToRomanNum;
 	private int numPairs;
 	
-	// static final for roman numeral vals because we know them
-	// and they should never change
+	// static final for roman numeral vals
 	public static final Map<String, Integer> ROMAN_NUM_RANK;
 	public static final int[] RANK_TO_VAL = {1, 5, 10, 50, 100, 500, 1000};
 	public static final String[] NO_REPEATS = {"V", "L", "D"};
@@ -35,7 +38,7 @@ public class Translator {
 			new HashSet<String>(Arrays.asList(SUBTRACTORS));
 	public static final Map<String, Set<String>> MINUENDS;
 		
-	// static final initialization for maps
+	// initialization for static final maps
 	static {
         Map<String, Integer> numMap = new HashMap<String, Integer>();
         String[] nums = {"I", "V", "X", "L", "C", "D", "M"};
