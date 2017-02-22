@@ -202,8 +202,10 @@ public class Translator {
 	 * an arabic numeral.
 	 * 
 	 * @param romanNumeral is a string: the roman numeral to convert
-	 * @param total
-	 * @param used
+	 * @param used: a 2D int boolean where used[rank][0] is true if 
+	 * the roman numeral of that rank has been used as a base, and
+	 * used[rank][1] returns true if the roman numeral of that rank
+	 * has been used in a subtraction
 	 * @throws NullPointerException if the roman numeral is null, and
 	 * IllegalArgumentException if the roman numeral is not well formed
 	 * @return 
@@ -317,16 +319,93 @@ public class Translator {
 	 * 
 	 * @param arabicNumeral is an int: the arabic numeral to convert 
 	 * @throws IllegalArgumentException if the given int is less than 1
+	 * or greater than 3999
 	 * @return a string representing the given arabic numeral 
 	 * as a roman numeral
 	 */
 	public static String arabicNumToRoman(int arabicNumeral) {
 		
-		 // A number written in Arabic numerals can be broken into digits. 
-		 // For example, 1903 is composed of 1, 9, 0, and 3. To write the Roman 
-		 // numeral, each of the non-zero digits should be treated separately. 
-		 // In the above example, 1,000 = M, 900 = CM, and 3 = III. 
-		 // Therefore, 1903 = MCMIII.
-		return "";
+		// A number written in Arabic numerals can be broken into digits. 
+		// For example, 1903 is composed of 1, 9, 0, and 3. To write the Roman 
+		// numeral, each of the non-zero digits should be treated separately. 
+		// In the above example, 1,000 = M, 900 = CM, and 3 = III. 
+		// Therefore, 1903 = MCMIII.
+		if (arabicNumeral < 1 || arabicNumeral > 3999)
+			throw new IllegalArgumentException("Given int '" + arabicNumeral
+					+ " is outside valid range. Under strict interpretation, "
+					+ "Roman numerals cannot represent arabic numerals less "
+					+ "than 1 or greater than 3999.");
+		
+		String romanNum = "";
+		int thousands = arabicNumeral / 1000;
+		int hundreds = (arabicNumeral % 1000) / 100;
+		int tens = (arabicNumeral % 100) / 10;
+		int ones = arabicNumeral % 10;
+		
+		for (int i = 0; i < thousands; i++)
+			romanNum += "M";
+		if (hundreds > 0) 
+			romanNum += addRomanPortion(hundreds, 3);
+		if (tens > 0)
+			romanNum += addRomanPortion(tens, 2);
+		if (ones > 0)
+			romanNum += addRomanPortion(ones, 1);
+		
+		return romanNum;
+	}
+	
+	/**
+	 * Private helper method for converting an arabic numeral to roman
+	 * numeral by digit.
+	 * 
+	 * @param value is a positive int between 1 and 9, inclusive
+	 * @param place is an int: a power of ten, either 1, 2, or 3
+	 * @return the roman numeral that matches value and place
+	 */
+	private static String addRomanPortion(int arabicNum, int place) {
+
+		String portion = "";
+		String low = "", mid = "", high = "";
+		
+		// get the right set of numerals
+		if (place == 3) {
+			low = "C";
+			mid = "D";
+			high = "M";
+		}
+		else if (place == 2) {
+			low = "X";
+			mid = "L";
+			high = "C";
+		}
+		else {
+			low = "I";
+			mid = "V";
+			high = "X";
+		}
+		
+		// attach 
+		if (arabicNum < 4) {
+			for (int i = 0; i < arabicNum; i++)
+				portion += low;
+		}
+		else if (arabicNum == 4) {
+			portion += low;
+			portion += mid;
+		}
+		else if (arabicNum == 5) {
+			portion += mid;
+		}
+		else if (arabicNum < 9) {
+			portion += mid;
+			for (int i = 5; i < arabicNum; i++)
+				portion += low;	
+		}
+		else {
+			portion += low;
+			portion += high;
+		}
+		
+		return portion;
 	}
 }

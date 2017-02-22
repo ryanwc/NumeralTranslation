@@ -23,6 +23,7 @@ public class NoteProcessorTester {
 		
 		// unit testing for translation
 		test.testRomanNumToArabicNum();
+		test.testArabicNumToRomanNum();
 		
 		// unit testing for ledger
 		
@@ -103,5 +104,42 @@ public class NoteProcessorTester {
     	} catch (IllegalArgumentException e) {
     		
     	}
+    }
+    
+    @Test
+    public void testArabicNumToRomanNum() {
+    	
+    	// basic tests
+    	assertEquals("I", Translator.arabicNumToRoman(1));
+    	assertEquals("V", Translator.arabicNumToRoman(5));
+    	assertEquals("X", Translator.arabicNumToRoman(10));
+    	assertEquals("L", Translator.arabicNumToRoman(50));
+    	assertEquals("C", Translator.arabicNumToRoman(100));
+    	assertEquals("D", Translator.arabicNumToRoman(500));
+    	assertEquals("M", Translator.arabicNumToRoman(1000));
+    	
+    	// a bit harder
+    	assertEquals("II", Translator.arabicNumToRoman(2));
+    	assertEquals("IV", Translator.arabicNumToRoman(4));
+    	assertEquals("VI", Translator.arabicNumToRoman(6));
+    	assertEquals("VII", Translator.arabicNumToRoman(7)); 
+    	assertEquals("IX", Translator.arabicNumToRoman(9));
+    	assertEquals("XI", Translator.arabicNumToRoman(11)); 
+    	assertEquals("XIV", Translator.arabicNumToRoman(14));
+    	assertEquals("XV", Translator.arabicNumToRoman(15));
+
+    	// more complex operations
+    	assertEquals("MMVI", Translator.arabicNumToRoman(2006));
+    	assertEquals("MCMXLIV", Translator.arabicNumToRoman(1944));
+    	assertEquals("DLXIX", Translator.arabicNumToRoman(569));
+    	assertEquals("MMMDCVIII", Translator.arabicNumToRoman(3608));
+    	assertEquals("MMMCMXXVII", Translator.arabicNumToRoman(3927));
+    	assertEquals("MDCLVI", Translator.arabicNumToRoman(1656));
+    	assertEquals("DCCCLXXXIV", Translator.arabicNumToRoman(884));
+    	assertEquals("MMMCLXVI", Translator.arabicNumToRoman(3166));
+    	assertEquals("CXCVIII", Translator.arabicNumToRoman(198));
+    	assertEquals("MDCCXX", Translator.arabicNumToRoman(1720));
+    	assertEquals("MMMCCXXXII", Translator.arabicNumToRoman(3232));
+    	assertEquals("MMMCDLXXXVII", Translator.arabicNumToRoman(3487));
     }
 }
