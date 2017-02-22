@@ -25,7 +25,7 @@ public class NoteProcessor {
 
 	File rawNotes;
 	NoteParser parser;
-	IntergalacticLedger ledger;
+	Ledger ledger;
 	QueryHandler qHandler;
 	Translator translator;
 	
@@ -50,7 +50,7 @@ public class NoteProcessor {
 		
 		this.rawNotes = notes;
 		this.parser = new NoteParser();
-		this.ledger = new IntergalacticLedger();
+		this.ledger = new Ledger();
 		this.qHandler = new QueryHandler();
 		this.translator = new Translator();
 	}
