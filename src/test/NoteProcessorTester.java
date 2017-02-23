@@ -12,9 +12,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import app.NoteParser;
-import app.Translator;
-import app.NoteParser.ParsedNote;
+import app.*;
 
 /**
  * Unit test processing notes about intergalactic commodity markets.
@@ -69,13 +67,15 @@ public class NoteProcessorTester {
         }
     	
     	// basic tests
-        Map<Integer, List<ParsedNote>> parsedNotes = 
+        Map<String, List<ParsedNote>> parsedNotes = 
         		parser.parseNotes(notes);
         
+        /*
     	for (Integer type : parsedNotes.keySet()) {
     		for (ParsedNote pNote: parsedNotes.get(type))
     			System.out.println(pNote.toString());
     	}
+    	*/
     }
 
     @Test

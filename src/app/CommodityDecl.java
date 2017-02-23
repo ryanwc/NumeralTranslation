@@ -1,5 +1,11 @@
 package app;
 
+/**
+ * Hold all relevant information about a commodity declaration from notes
+ * about intergalactic commodity markets.
+ * 
+ * @author ryanwilliamconnor
+ */
 public class CommodityDecl extends Declaration {
 
 	private String intergalNum;
@@ -11,8 +17,12 @@ public class CommodityDecl extends Declaration {
 	 * 
 	 * Keeps only the information is relevant to a commodity declaration.
 	 * 
+	 * A well-formed commodity declaration consists of the following:
+	 * 1) an intergal numeral, 2) a commodity, 3) the word 'is',
+	 * 4) an arabic numeral, and 5) the word 'Credits'.
+	 * 
 	 * WARNING: Assumes the UnknownNote actually conforms to commodity
-	 * declaration specs.
+	 * declaration specs. 
 	 * 
 	 * @param note is the UnknownNote to convert to a CommodityDecl
 	 */
@@ -35,8 +45,24 @@ public class CommodityDecl extends Declaration {
 	
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		String str = "";
+		str += super.getNote();
+		str += '\n';
+		str += "Components: ";
+		for (int i = 0; i < super.getComponents().length; i++) {
+			str += "'" + super.getComponents()[i] + "', ";
+		}
+		str += '\n';
+		str += "Cis: " + super.getCountIs();
+		str += "isP: " + super.getIsPos();
+		str += "Arabic numeral: " + arabicNum; 
+		str += "Intergal numeral: " + intergalNum;
+		str += "\n";
+		str += "Commodity: " + commodity;
+		str += '\n';
+			
+		return str;
 	}
 
 	public String getIntergalNum() {

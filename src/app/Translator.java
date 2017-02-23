@@ -109,6 +109,7 @@ public class Translator {
 		intergalNumRank.put(baseIntergalNum, rank);
 		rankToRomanNum[rank] = baseRomanNum;
 		numPairs++;
+		//System.out.println("set " + baseIntergalNum);
 	}
 	
 	/**

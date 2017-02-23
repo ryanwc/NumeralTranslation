@@ -18,7 +18,7 @@ public class UnknownNote extends ParsedNote {
 		countArabic, countCredits, countHow, countMuch, countMany, isPos, 
 		start1IntergalClust, end1IntergalClust, start2IntergalClust, 
 		end2IntergalClust, romanPos, comm1Pos, comm2Pos, qPos, arabicPos, 
-		creditPos, howPos, muchPos, manyPos, noteType;
+		creditPos, howPos, muchPos, manyPos;
 	
 	public UnknownNote(String note, String[] components, int countIs, 
 			int countIntergalClust, int countRomanBase,
@@ -56,8 +56,6 @@ public class UnknownNote extends ParsedNote {
 		this.howPos = howPos;
 		this.muchPos = muchPos;
 		this.manyPos = manyPos;
-		
-		this.noteType = -1;
 	}
 	
 	@Override
@@ -86,7 +84,6 @@ public class UnknownNote extends ParsedNote {
 				", HP: " + howPos + ", muchP: " + muchPos + 
 				", manyP: " + manyPos;
 		str += '\n';
-		str += "Note type: " + noteType;
 			
 		return str;
 	}

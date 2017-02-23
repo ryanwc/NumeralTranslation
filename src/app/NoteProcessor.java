@@ -89,7 +89,7 @@ public class NoteProcessor {
         	if (pNote instanceof BaseIntergalNumDecl) {
         		BaseIntergalNumDecl dec = ((BaseIntergalNumDecl)pNote);
         		processor.translator.
-        			setIntergalToRomanValue(dec.getBaseRomanNum(), 
+        			setIntergalToRomanValue(dec.getBaseIntergalNum(), 
         					dec.getBaseRomanNum());
         	}
         }
@@ -106,7 +106,7 @@ public class NoteProcessor {
         for (ParsedNote pNote : processor.parsedNotes.get("CommodityDecl")) {
         	if (pNote instanceof CommodityDecl) {
         		CommodityDecl cDec = ((CommodityDecl) pNote);
-            	processor.ledger.recordCommDecl(cDec);
+            	processor.ledger.recordCommDecl(cDec, true); // overwrite price
         	}
         }
         

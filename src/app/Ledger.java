@@ -1,5 +1,6 @@
 package app;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +41,7 @@ public class Ledger {
 		this.priceBook = priceBook;
 	}
 	
-	public void setCreditPrice(String commodity, Integer price) {
+	public void setCreditPrice(String commodity, BigDecimal price) {
 		if (!priceBook.containsKey(commodity))
 			createLedgerEntry(commodity);
 		PricePair pair = priceBook.get(commodity);
@@ -56,7 +57,7 @@ public class Ledger {
 		priceBook.put(commodity, pair);
 	}
 	
-	public Integer getCreditPrice(String commodity) {
+	public BigDecimal getCreditPrice(String commodity) {
 		return priceBook.get(commodity).getCreditPrice();
 	}
 	
@@ -69,6 +70,20 @@ public class Ledger {
 	 * 
 	 * Assumes the commodity declaration is well-formed.
 	 * 
+	 * A well-formed commodity declaration has the following components:
+	 * 1) an intergal numeral, 2) a commodity, 3) the word 'is',
+	 * 4) an arabic numeral, and 5) the word 'Credits'.
+	 * 
+	 * The ledger will speak with the translator and perform the 
+	 * appropriate calculations to record the value of "1 unit" of the
+	 * commodity in the price book in both intergalactic numerals and
+	 * Credits (represented by arabic numerals).
+	 * 
+	 * Note, the valid arabic range of intergal numerals is 1-3999, if
+	 * intergal numerals follow to strict usage of Roman numeral rules.
+	 * If the unit price falls outside this range, the ledger makes
+	 * an appropriate note instead of recording an intergal price.
+	 * 
 	 * @param cDec is a CommodityDecl with the commodity and price
 	 * information to record in the ledger.
 	 * @param overwrite is a boolean: pass true to overwrite any existing
@@ -77,11 +92,21 @@ public class Ledger {
 	public void recordCommDecl(CommodityDecl cDec, boolean overwrite) {
 		
 		String commodity = cDec.getCommodity();
-		int arabicNum = cDec.getArabicNum();
-		String intergalNum = cDec.getIntergalNum();
+		int aPrice = cDec.getArabicNum();
+		String iAmnt = cDec.getIntergalNum();
+		int aAmnt = translator.intergalNumToArabic(iAmnt);
+		BigDecimal aUnitPrice = new BigDecimal((double)aPrice / aAmnt);
+		
+		String iUnitPrice;
+		try {
+			iUnitPrice = translator.arabicNumToIntergal(aUnitPrice.intValue());	
+		}
+		catch (IllegalArgumentException e) {
+			iUnitPrice = "unit price outside valid range of intergal numerals";
+		}
 		
 		PricePair prices = priceBook.containsKey(commodity) ? 
-			priceBook.get(commodity) : new PricePair(arabicNum, intergalNum);
+			priceBook.get(commodity) : new PricePair(aUnitPrice, iUnitPrice);
 			
 		if (overwrite) {
 			priceBook.put(commodity, prices);
@@ -89,9 +114,9 @@ public class Ledger {
 		else {
 			// if not overwrite, only add if null
 			if (prices.getCreditPrice() != null)
-				prices.setCreditPrice(arabicNum);
+				prices.setCreditPrice(aUnitPrice);
 			if (prices.getIntergalPrice() != null)
-				prices.setIntergalPrice(intergalNum);
+				prices.setIntergalPrice(iUnitPrice);
 			priceBook.put(commodity, prices);
 		}
 	}
@@ -101,19 +126,19 @@ public class Ledger {
 	 */
 	class PricePair {
 		
-		private Integer creditPrice; // Integer so can be null
+		private BigDecimal creditPrice; // money: minimize precision lost :)
 		private String intergalPrice;
 		
-		public PricePair(Integer creditPrice, String intergalPrice) {
+		public PricePair(BigDecimal creditPrice, String intergalPrice) {
 			this.creditPrice = creditPrice;
 			this.intergalPrice = intergalPrice;
 		}
 		
-		public Integer getCreditPrice() {
+		public BigDecimal getCreditPrice() {
 			return creditPrice;
 		}
 		
-		public void setCreditPrice(Integer price) {
+		public void setCreditPrice(BigDecimal price) {
 			this.creditPrice = price;			
 		}
 		
@@ -126,7 +151,7 @@ public class Ledger {
 		}
 		
 		public String toString() {
-			return "(" + intergalPrice;
+			return "(Intergal: " + intergalPrice + ", Credits: " + creditPrice + ")";
 		}
 	}
 }

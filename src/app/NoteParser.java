@@ -42,10 +42,9 @@ public class NoteParser {
 		String noteType;
 		for (String note : notes) {
 			parsedNote = parse(note);
-			noteType = parsedNote.getClass().getName();
+			noteType = parsedNote.getClass().getSimpleName();
 			if (!parsedNotes.containsKey(noteType))
-				parsedNotes.put(parsedNote.getClass().getName(), 
-						new ArrayList<ParsedNote>());
+				parsedNotes.put(noteType, new ArrayList<ParsedNote>());
 			similarNotes = parsedNotes.get(noteType);
 			similarNotes.add(parsedNote);
 			parsedNotes.put(noteType, similarNotes);
