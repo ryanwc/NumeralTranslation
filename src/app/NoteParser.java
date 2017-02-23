@@ -88,7 +88,7 @@ public class NoteParser {
 		
 		// gather data
 		for (int i = 0; i < components.length; i++) {
-			//System.out.println("getting data about '" + components[i] + "'");
+			System.out.println("getting data about '" + components[i] + "'");
 			if (components[i].equals("is")) {
 				isPos = i;
 				countIs++;
@@ -120,13 +120,14 @@ public class NoteParser {
 				continue;
 			}
 			if (isArabic(components[i])) {
-				//System.out.println(components[i] + " is arabic");
+				System.out.println(components[i] + " is arabic");
 				countArabic++;
 				arabicPos = i;
 				continue;
 			}
 			if (isCommodity(components[i])) {
 				// redundant check on !=Credits because if series above
+				System.out.println(components[i] + " is commodity");
 				if (countComm == 0) {
 					comm1Pos = i;
 				}
@@ -146,13 +147,14 @@ public class NoteParser {
 				Translator.romanNumToArabic(components[i]);
 				countRomanComp++;
 				romanPos = i;
+				System.out.println("was composite roman num");
 				continue;
 			} catch (IllegalArgumentException e) {
-				// just move on to next check
+				System.out.println("caught " + components[i]);
 			}
 			if (isIntergalNum(components[i])) {
 				// checks on != how, is, much redundant in this if series
-				//System.out.println("'" + components[i] + "' is intergal");
+				System.out.println("'" + components[i] + "' is intergal");
 				if (countIntergalClust == 0) {
 					start1IntergalClust = i;
 				}
@@ -163,7 +165,7 @@ public class NoteParser {
 				// from the start of this cluster, count intergal nums
 				// set end of cluster and i appropriately
 				do {
-					//System.out.println("Cluster includes '" + components[i] + "'");
+					System.out.println("Cluster includes '" + components[i] + "'");
 					i++;
 				} while (isIntergalNum(components[i]));
 				i--;
@@ -217,7 +219,8 @@ public class NoteParser {
 	 * a commodity in notes about intergalactic commodity markets.
 	 * 
 	 * Commodities are entirely alphabetic and start with a capital
-	 * letter, and are not some reserved key words.
+	 * letter followed by at least one lowercase letter, 
+	 * and are not some reserved key words.
 	 * 
 	 * @param str is a string: the string to check
 	 * @return true if the string is a commodity, false otherwise
@@ -228,12 +231,13 @@ public class NoteParser {
 			throw new IllegalArgumentException("str cannot be null");
 		
 		if (str.length() < 2) return false;
+		if (!Character.isAlphabetic(str.charAt(0))) return false;
 		if (!Character.isUpperCase(str.charAt(0))) return false;
 		if (str.equals("Credits")) return false;
 		
-		for (int i = 0; i < str.length(); i++) {
-			if (!Character.isAlphabetic(str.charAt(i)))
-				return false;
+		for (int i = 1; i < str.length(); i++) {
+			if (!Character.isAlphabetic(str.charAt(i))) return false;
+			if (Character.isUpperCase(str.charAt(i))) return false;
 		}
 		
 		return true;
@@ -342,6 +346,7 @@ public class NoteParser {
 		if (note == null) 
 			throw new IllegalArgumentException("note cannot be null");
 		
+		System.out.println(note);
 		return note.getComponents().length > 3 && 
 			note.getCountIntergalClust() == 1 &&
 			note.getCountRomanComp() == 1 && note.getCountIs() == 1 && 

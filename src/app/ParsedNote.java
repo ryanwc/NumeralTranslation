@@ -23,21 +23,6 @@ public abstract class ParsedNote {
 		this.components = components;
 	}
 	
-	/**
-	 * Create a new parsed note from an UnknownNote.
-	 * 
-	 * Useful for conversions from an UnknownNote to a known
-	 * note type.
-	 * 
-	 * @param note is an UnknownNote: the note on which to base the
-	 * new ParsedNote.
-	 */
-	public ParsedNote(UnknownNote note) {
-		// throw exceptions
-		this.note = note.getNote();
-		this.components = note.getComponents();
-	}
-	
 	public String getNote() {
 		return note;
 	}

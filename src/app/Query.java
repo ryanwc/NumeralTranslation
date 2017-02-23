@@ -30,7 +30,7 @@ public class Query extends ParsedNote {
 	 * @param note is the UnknownNote to convert to a Query
 	 */
 	public Query(UnknownNote note) {
-		super(note);
+		super(note.getNote(), note.getComponents());
 		
 		String[] components = note.getComponents();
 		

@@ -85,48 +85,65 @@ public class NoteProcessor {
 		// parse the notes
         processor.parsedNotes = processor.parser.parseNotes(notes);
         
+        List<ParsedNote> pNotes;
+        
         // send base intergalactic numeral declarations to the translator
-        for (ParsedNote pNote : processor.parsedNotes.
-        							get("BaseIntergalNumDecl")) {
-        	if (pNote instanceof BaseIntergalNumDecl) {
-        		BaseIntergalNumDecl dec = ((BaseIntergalNumDecl)pNote);
-        		processor.translator.
-        			setIntergalToRomanValue(dec.getBaseIntergalNum(), 
-        					dec.getBaseRomanNum());
-        	}
+        pNotes = processor.parsedNotes.get("BaseIntergalNumDecl");
+        if (pNotes != null ) {
+	        for (ParsedNote pNote : pNotes) {
+	        	if (pNote instanceof BaseIntergalNumDecl) {
+	        		BaseIntergalNumDecl dec = ((BaseIntergalNumDecl)pNote);
+	        		processor.translator.
+	        			setIntergalToRomanValue(dec.getBaseIntergalNum(), 
+	        					dec.getBaseRomanNum());
+	        	}
+	        }
         }
         
-        /*
+        // send composite intergal numeral declarations to the translator
+        pNotes = processor.parsedNotes.get("CompIntergalNumDecl");
+        if (pNotes != null) {
+        	System.out.println("hi");
+	        for (ParsedNote pNote : pNotes) {
+	        	if (pNote instanceof CompIntergalNumDecl) {
+	        		CompIntergalNumDecl dec = ((CompIntergalNumDecl)pNote);
+	        		String[] bases = dec.getIntergalNum().split(" ");
+	        		String romanNum = dec.getRomanNum();
+	        		for (int i = 0; i < bases.length; i++)
+	        			processor.translator.setIntergalToRomanValue(bases[i],
+	        					romanNum.substring(i, i+1));
+	        	}
+	        }
+        }
+        
+        
         String[] toIg = processor.translator.getRankToIntergalNum();
         String[] toR = processor.translator.getRankToRomanNum();
         for (int i = 0; i < toIg.length; i++) {
         	System.out.println(toIg[i] + ", " + toR[i]);
         }
-        */
         
         // send commodity declarations to the ledger
-        for (ParsedNote pNote : processor.parsedNotes.get("CommodityDecl")) {
-        	if (pNote instanceof CommodityDecl) {
-        		CommodityDecl cDec = ((CommodityDecl) pNote);
-            	processor.ledger.recordCommDecl(cDec, true); // overwrite price
-        	}
+        pNotes = processor.parsedNotes.get("CommodityDecl");
+        if (pNotes != null) {
+	        for (ParsedNote pNote : pNotes) {
+	        	if (pNote instanceof CommodityDecl) {
+	        		CommodityDecl cDec = ((CommodityDecl) pNote);
+	        		// overwrite price
+	            	processor.ledger.recordCommDecl(cDec, true);
+	        	}
+	        }
         }
         
-        // output stats, for fun
-        /*
-        String[] toIg = processor.translator.getRankToIntergalNum();
-        String[] toR = processor.translator.getRankToRomanNum();
-        for (int i = 0; i < toIg.length; i++) {
-        	System.out.println(toIg[i] + ", " + toR[i]);
-        }
-        */
-        
-        // handle queries
-        for (ParsedNote pNote : processor.parsedNotes.get("Query")) {
-        	if (pNote instanceof Query) {
-        		Query q = ((Query)pNote);
-        		processor.qHandler.answer(q);
-        	}
+        // handle any queries
+        pNotes = processor.parsedNotes.get("Query");
+        if (pNotes != null) {
+	        for (ParsedNote pNote : pNotes) {
+	        	if (pNote instanceof Query) {
+	        		Query q = ((Query)pNote);
+	        		processor.qHandler.answer(q);
+	        	}
+	        }
         }
 	}
 	
