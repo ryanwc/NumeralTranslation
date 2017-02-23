@@ -103,7 +103,6 @@ public class NoteProcessor {
         // send composite intergal numeral declarations to the translator
         pNotes = processor.parsedNotes.get("CompIntergalNumDecl");
         if (pNotes != null) {
-        	System.out.println("hi");
 	        for (ParsedNote pNote : pNotes) {
 	        	if (pNote instanceof CompIntergalNumDecl) {
 	        		CompIntergalNumDecl dec = ((CompIntergalNumDecl)pNote);
@@ -114,13 +113,6 @@ public class NoteProcessor {
 	        					romanNum.substring(i, i+1));
 	        	}
 	        }
-        }
-        
-        
-        String[] toIg = processor.translator.getRankToIntergalNum();
-        String[] toR = processor.translator.getRankToRomanNum();
-        for (int i = 0; i < toIg.length; i++) {
-        	System.out.println(toIg[i] + ", " + toR[i]);
         }
         
         // send commodity declarations to the ledger

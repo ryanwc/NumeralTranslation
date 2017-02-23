@@ -88,7 +88,6 @@ public class NoteParser {
 		
 		// gather data
 		for (int i = 0; i < components.length; i++) {
-			System.out.println("getting data about '" + components[i] + "'");
 			if (components[i].equals("is")) {
 				isPos = i;
 				countIs++;
@@ -120,14 +119,12 @@ public class NoteParser {
 				continue;
 			}
 			if (isArabic(components[i])) {
-				System.out.println(components[i] + " is arabic");
 				countArabic++;
 				arabicPos = i;
 				continue;
 			}
 			if (isCommodity(components[i])) {
 				// redundant check on !=Credits because if series above
-				System.out.println(components[i] + " is commodity");
 				if (countComm == 0) {
 					comm1Pos = i;
 				}
@@ -147,14 +144,12 @@ public class NoteParser {
 				Translator.romanNumToArabic(components[i]);
 				countRomanComp++;
 				romanPos = i;
-				System.out.println("was composite roman num");
 				continue;
 			} catch (IllegalArgumentException e) {
-				System.out.println("caught " + components[i]);
+				// move to next test
 			}
 			if (isIntergalNum(components[i])) {
 				// checks on != how, is, much redundant in this if series
-				System.out.println("'" + components[i] + "' is intergal");
 				if (countIntergalClust == 0) {
 					start1IntergalClust = i;
 				}
@@ -165,7 +160,6 @@ public class NoteParser {
 				// from the start of this cluster, count intergal nums
 				// set end of cluster and i appropriately
 				do {
-					System.out.println("Cluster includes '" + components[i] + "'");
 					i++;
 				} while (isIntergalNum(components[i]));
 				i--;
@@ -346,7 +340,6 @@ public class NoteParser {
 		if (note == null) 
 			throw new IllegalArgumentException("note cannot be null");
 		
-		System.out.println(note);
 		return note.getComponents().length > 3 && 
 			note.getCountIntergalClust() == 1 &&
 			note.getCountRomanComp() == 1 && note.getCountIs() == 1 && 
