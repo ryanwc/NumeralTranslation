@@ -1,5 +1,24 @@
 package app;
 
+/**
+ * Hold all relevant information about a composite intergalactic numeral 
+ * declaration from notes about intergalactic commodity markets.
+ * 
+ * A composite intergalactic numeral declaration has the following form:
+ * '[intergal num longer than 1 word] is [roman num longer than 1 char]'
+ * 
+ * NOTE: This class is currently not in use. It is incomplete and provided
+ * as a demonstration on how the application can be expanded.
+ * It is useful for giving the translator more complete information from 
+ * spotty or incomplete notes. For example, if we have:
+ * 1. prok is I
+ * 2. prok glob is IV
+ * 3. how much is glob ?
+ * 
+ * We can answer 3 with the use of 1 and 2 combined.
+ * 
+ * @author ryanwilliamconnor
+ */
 public class CompIntergalNumDecl extends Declaration {
 
 	private String romanNum, intergalNum;
@@ -29,8 +48,14 @@ public class CompIntergalNumDecl extends Declaration {
 	
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		String str = super.toString();
+		str += "Base roman numeral: " + romanNum;
+		str += "\n";
+		str += "Base intergalactic numeral: " + intergalNum;
+		str += "\n";
+		
+		return str;
 	}
 
 	public String getRomanNum() {

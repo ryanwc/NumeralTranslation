@@ -1,5 +1,18 @@
 package app;
 
+/**
+ * 
+ * Hold all relevant information about a query from notes about 
+ * intergalactic commodity markets.
+ * 
+ * Queries ask something about the intergalactic commodity markets.
+ * 
+ * A query has one of the following forms:
+ * 1) 'how much is [intergalactic numeral]?'
+ * 2) 'how many Credits is [intergalactic numeral] [commodity]?'
+ * 
+ * @author ryanwilliamconnor
+ */
 public class Query extends ParsedNote {
 
 	// if have commodity, it's a 'many' question
@@ -40,6 +53,18 @@ public class Query extends ParsedNote {
 		str += components[i];
 		this.intergalNum = str;
 		this.intergalNumLength = len; 
+	}
+	
+	@Override
+	public String toString() {
+		// note commodity will print null if it's a 'much' question
+		String str = super.toString();
+		str += "Commodity: " + commodity;
+		str += "\n";
+		str += "Intergalactic numeral: " + intergalNum;
+		str += "\n";
+		
+		return str;
 	}
 
 	public String getCommodity() {

@@ -3,7 +3,6 @@ package app;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Bookkeep information about prices of various commodities.
@@ -18,15 +17,15 @@ public class Ledger {
 	private Map<String, PricePair> priceBook;
 	Translator translator;
 	
+	/**
+	 * Create a new Ledger.
+	 * 
+	 * @param translator is a Translator: the store of translation
+	 * knowledge and services to associate with this Ledger
+	 */
 	public Ledger(Translator translator) {
 		this.priceBook = new HashMap<String, PricePair>();
 		this.translator = translator;
-	}
-	
-	public Ledger(Set<String> entries) {
-		this.priceBook = new HashMap<String, PricePair>();
-		for (String entry : entries)
-			createLedgerEntry(entry);
 	}
 	
 	public Map<String, PricePair> getPriceBook() {
@@ -42,16 +41,14 @@ public class Ledger {
 	}
 	
 	public void setCreditPrice(String commodity, BigDecimal price) {
-		if (!priceBook.containsKey(commodity))
-			createLedgerEntry(commodity);
+		if (!priceBook.containsKey(commodity)) createLedgerEntry(commodity);
 		PricePair pair = priceBook.get(commodity);
 		pair.setCreditPrice(price);
 		priceBook.put(commodity, pair);
 	}
 	
 	public void setIntergalPrice(String commodity, String price) {
-		if (!priceBook.containsKey(commodity))
-			createLedgerEntry(commodity);
+		if (!priceBook.containsKey(commodity)) createLedgerEntry(commodity);
 		PricePair pair = priceBook.get(commodity);
 		pair.setIntergalPrice(price);
 		priceBook.put(commodity, pair);
@@ -86,10 +83,14 @@ public class Ledger {
 	 * 
 	 * @param cDec is a CommodityDecl with the commodity and price
 	 * information to record in the ledger.
+	 * @throws IllegalArgumentException if cDec is null
 	 * @param overwrite is a boolean: pass true to overwrite any existing
 	 * prices, false to overwrite only null prices
 	 */
 	public void recordCommDecl(CommodityDecl cDec, boolean overwrite) {
+		
+		if (cDec == null)
+			throw new IllegalArgumentException("cDec cannot be null");
 		
 		String commodity = cDec.getCommodity();
 		int aPrice = cDec.getArabicNum();
@@ -122,13 +123,19 @@ public class Ledger {
 	}
 	
 	/**
-	 * A tuple of (int:credit price, String:intergalactice price). 
+	 * A tuple of (BigDecimal:credit price, String:intergalactice price). 
 	 */
 	class PricePair {
 		
 		private BigDecimal creditPrice; // money: minimize precision lost :)
 		private String intergalPrice;
 		
+		/**
+		 * Create a new price pair.
+		 * 
+		 * @param creditPrice is a BigDecimal: the credit price
+		 * @param intergalPrice is a string: the intergal numeral price
+		 */
 		public PricePair(BigDecimal creditPrice, String intergalPrice) {
 			this.creditPrice = creditPrice;
 			this.intergalPrice = intergalPrice;

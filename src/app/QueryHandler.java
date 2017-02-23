@@ -18,6 +18,14 @@ public class QueryHandler {
 	Ledger ledger;
 	NumberFormat priceOutFormat;
 	
+	/**
+	 * Create a new QueryHandler.
+	 * 
+	 * @param translator is a Translator: the store of knowledge and translation
+	 * services which the QueryHandler will draw upon to answer queries
+	 * @param ledger is a Ledger: the store of commodity prices the QueryHandler
+	 * will use to answer queries.
+	 */
 	public QueryHandler(Translator translator, Ledger ledger) {
 		this.translator = translator;
 		this.ledger = ledger;
@@ -27,7 +35,13 @@ public class QueryHandler {
 	/**
 	 * Answer the given query.
 	 * 
-	 * @param q
+	 * Assumes the query actually attempts to be a query (i.e., has a '?'
+	 * at the end).
+	 * 
+	 * Prints response (which could be an answer or failure message)
+	 * to standard output.
+	 * 
+	 * @param q is a Query: the query to answer.
 	 */
 	public void answer(Query q) {
 		
@@ -46,37 +60,60 @@ public class QueryHandler {
 	}
 	
 	/**
+	 * Helper method for handling a query.
 	 * Handle a 'much' query, which has this form:
 	 * 'how much is [intergalNum]?'
+	 * 
+	 * Prints response to standard output.
 	 * 
 	 * @param q is a Query: the 'much' query to handle
 	 */
 	private void handleMuchQ(Query q) {
-		String answer = q.intergalNum + " is ";
-		answer += translator.intergalNumToArabic(q.intergalNum);
-		System.out.println(answer);
+		try {
+			String answer = q.intergalNum + " is ";
+			answer += translator.intergalNumToArabic(q.intergalNum);
+			System.out.println(answer);	
+		} catch (Exception e) {
+			System.out.println("I don't know how to answer '" 
+					+ q.getNote() + "'");
+		}
 	}
 	
 	/**
+	 * Helper method for handling a query.
 	 * Handle a 'many' query, which has this form:
 	 * 'how many Credits is [intergalNum] [commodity]?'
+	 * 
+	 * Prints response to standard output.
 	 * 
 	 * @param q is a Query: the 'many' query to handle
 	 */
 	private void handleManyQ(Query q) {
 		// format to show decimal only if necessary
-		int aCommAmnt = translator.intergalNumToArabic(q.intergalNum);
-		BigDecimal aCommPrice = ledger.getCreditPrice(q.commodity).
-				multiply(new BigDecimal(aCommAmnt));
-		String answer = q.intergalNum + " " + q.commodity + " is ";
-		answer += priceOutFormat.format(aCommPrice) + " Credits";
-		System.out.println(answer);
+		try {
+			int aCommAmnt = translator.intergalNumToArabic(q.intergalNum);
+			BigDecimal aCommPrice = ledger.getCreditPrice(q.commodity).
+					multiply(new BigDecimal(aCommAmnt));
+			String answer = q.intergalNum + " " + q.commodity + " is ";
+			answer += priceOutFormat.format(aCommPrice) + " Credits";
+			System.out.println(answer);
+		} catch (Exception e) {
+			System.out.println("I don't know how to answer '" 
+					+ q.getNote() + "'");
+		}
 	}
 	
 	/**
 	 * Determine whether a given query is well-formed.
 	 * 
-	 * @param q
+	 * A query has one of the following forms:
+	 * 1) 'how much is [intergalactic numeral]?'
+	 * 2) 'how many Credits is [intergalactic numeral] [commodity]?'
+	 * 
+	 * Prints response to standard output if ill-formed.
+	 * 
+	 * @param q is a Query: the query to check.
+	 * @return a boolean: true if the query is well-formed, false otherwise
 	 */
 	private boolean isWellFormed(Query q) {
 		

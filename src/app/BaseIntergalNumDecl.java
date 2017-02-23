@@ -1,5 +1,14 @@
 package app;
 
+/**
+ * Hold all relevant information about a base intergalactic numeral 
+ * declaration from notes about intergalactic commodity markets.
+ * 
+ * A base intergalactic numeral declaration has the following form:
+ * '[base intergal numeral] is [base roman numeral]'
+ * 
+ * @author ryanwilliamconnor
+ */
 public class BaseIntergalNumDecl extends Declaration {
 	
 	private String baseRomanNum, baseIntergalNum;
@@ -7,8 +16,8 @@ public class BaseIntergalNumDecl extends Declaration {
 	/**
 	 * Create a new BaseIntergalNumDecl from an UnknownNote.
 	 * 
-	 * Keeps only the information is relevant to a base intergal commodity
-	 * declaration.
+	 * Keeps only the information that is relevant to a base intergal 
+	 * commodity declaration.
 	 * 
 	 * WARNING: Assumes the UnknownNote actually conforms to 
 	 * base intergal numeral declaration specs.
@@ -23,7 +32,13 @@ public class BaseIntergalNumDecl extends Declaration {
 	
 	@Override
 	public String toString() {
-		String str = "";
+		
+		String str = super.toString();
+		str += "Base roman numeral: " + baseRomanNum;
+		str += "\n";
+		str += "Base intergalactic numeral: " + baseIntergalNum;
+		str += "\n";
+		
 		return str;
 	}
 	

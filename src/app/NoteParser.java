@@ -12,24 +12,15 @@ import java.util.Map;
  *
  */
 public class NoteParser {
-
-	public static final int UNKNOWN = -1;
-	public static final int BASE_NUM_DECL = 0;
-	public static final int COMPOSITE_NUM_DECL = 1;
-	public static final int COMMODITY_DECL = 2;
-	public static final int QUERY = 3;
-	
-	public static final int[] NOTE_TYPES = {UNKNOWN, BASE_NUM_DECL, 
-			COMPOSITE_NUM_DECL, COMMODITY_DECL, QUERY};
 	
 	/**
 	 * Parses information about the intergalactic commodity markets.
+	 * Returns organized, parsed notes.
 	 * 
 	 * @param notes is a list of strings where each string is a line
 	 * from intergalactic commodity notes
-	 * @return a map of {NOTE_TYPE: List<String>}, where List<String>
-	 * is the list of strings in the given notes that have the
-	 * type NOTE_TYPE.
+	 * @return a map of {String: List<ParsedNote>}, where List<ParsedNote>
+	 * is the list of ParsedNotes that have the type String.
 	 */
 	public Map<String, List<ParsedNote>> parseNotes(List<String> notes) {
 		
@@ -63,7 +54,7 @@ public class NoteParser {
 	 * machine learning and analysis of "unknown" note types.
 	 * But, that is out of scope for this project.
 	 * 
-	 * Track note metadata for type checker based on following syntax rules:
+	 * Tracks note metadata for type checker based on following syntax rules:
 	 * 1) can have 0 or 1 one 'is', 2) can have 0, 1, or 2 commodities, 
 	 * 3) commodities are one entirely alphabetic, non 'Credits' word starting 
 	 * with a capital letter, 4) can have 0, 1, or 2 clusters of base intergal 
@@ -74,8 +65,9 @@ public class NoteParser {
 	 * 0 or 1 'how', 11) can have 0 or 1 'much', 12) can have 0 or 1 'many'.
 	 * 
 	 * @param note is a string: the note to parse
-	 * @return a ParsedNote (the string split into an array of words and
-	 * metadata about the contents of the array)
+	 * @return a type of ParsedNote (the string split into an array of words 
+	 * and metadata about the contents of the array, and identified 
+	 * if possible)
 	 */
 	public ParsedNote parse(String note) {
 		
@@ -184,6 +176,7 @@ public class NoteParser {
 			}
 		}
 		
+		// create an unknown note to be identified (or not)
 		UnknownNote uNote = new UnknownNote(note, components, countIs, 
 				countIntergalClust, countRomanBase, countRomanComp, 
 				countComm, countQ, countArabic, countCredits, countHow, 
@@ -195,7 +188,18 @@ public class NoteParser {
 		return identifyNote(uNote);
 	}
 	
+	/**
+	 * Check whether the given string is entirely an arabic numeral.
+	 * 
+	 * @param str is a string: the string to check
+	 * @throws IllegalArgumentException if str is null
+	 * @return true if the string is contains (and contains nothing
+	 * but) an arabic numeral, false otherwise
+	 */
 	private boolean isArabic(String str) {
+		
+		if (str == null) 
+			throw new IllegalArgumentException("str cannot be null");
 		
 		for (int i = 0; i < str.length(); i++) {
 			try {
@@ -208,7 +212,20 @@ public class NoteParser {
 		return true;
 	}
 	
+	/**
+	 * Check whether the given string matches the form of 
+	 * a commodity in notes about intergalactic commodity markets.
+	 * 
+	 * Commodities are entirely alphabetic and start with a capital
+	 * letter, and are not some reserved key words.
+	 * 
+	 * @param str is a string: the string to check
+	 * @return true if the string is a commodity, false otherwise
+	 */
 	private boolean isCommodity(String str) {
+		
+		if (str == null) 
+			throw new IllegalArgumentException("str cannot be null");
 		
 		if (str.length() < 2) return false;
 		if (!Character.isUpperCase(str.charAt(0))) return false;
@@ -222,7 +239,24 @@ public class NoteParser {
 		return true;
 	}
 	
+	/**
+	 * Check whether the given string matches the form of an
+	 * intergalactic numeral form intergalactic commodity market
+	 * notes.
+	 * 
+	 * An intergalactic numeral in intergalactic commodity notes
+	 * is entirely alphabetic and lowercase, and is not 
+	 * some reserved key words.
+	 * 
+	 * @param str is the string to check
+	 * @throws IllegalArgumentException is the string is null
+	 * @return true if the string is an intergalactic numeral, 
+	 * false otherwise
+	 */
 	private boolean isIntergalNum(String str) {
+		
+		if (str == null) 
+			throw new IllegalArgumentException("str cannot be null");
 		
 		if (str.length() < 1) return false;
 		if (str.equals("Credits")) return false;
@@ -241,15 +275,19 @@ public class NoteParser {
 	}
 	
 	/**
-	 * Get the type of intergalactic commodity information 
-	 * this note holds.
+	 * Attempt to identify an UnknownNote.
+	 * If matching against all known ParsedNote types fails, 
+	 * returns the passed UnknownNote.
 	 * 
-	 * @param note is a string formatted as single line from 
-	 * intergalactic commodity notes
-	 * @return an int representing the type of intergalactic commodity
-	 * information the given note holds
+	 * @param note is the UnknownNote to identify
+	 * @throws IllegalArgumentException if note is null
+	 * @return an instance of ParsedNote that is also an instance of
+	 * the appropriate subclass based on checks of note metadata
 	 */
 	public ParsedNote identifyNote(UnknownNote note) {
+		
+		if (note == null) 
+			throw new IllegalArgumentException("note cannot be null");
 		
 		if (isQuery(note)) return new Query(note);
 		if (isBaseNumDecl(note)) return new BaseIntergalNumDecl(note);
@@ -261,17 +299,23 @@ public class NoteParser {
 	}
 	
 	/**
-	 * Determine whether a string is a base number declaration.
+	 * Determine whether an UnknownNote is a base number declaration
+	 * based on metadata.
 	 * 
 	 * Base number declarations have three components, in order:
 	 * 1) a 'cluster' of one intergalactic numeral, 2) the word 'is', 
 	 * and 3) a base roman numeral.
 	 * 
-	 * @param note is a ParsedNote from intergalactic commodity notes
-	 * @return true if the given ParsedNote is a base number declaration,
+	 * @param note is an UnknownNote: the note to check
+	 * @throws IllegalArgumentException if the note is null
+	 * @return true if the given note is a base number declaration,
 	 * false otherwise.
 	 */
 	private boolean isBaseNumDecl(UnknownNote note) {
+		
+		if (note == null) 
+			throw new IllegalArgumentException("note cannot be null");
+		
 		return note.getComponents().length == 3 && 
 			note.getCountIntergalClust() == 1 &&
 			note.getCountRomanBase() == 1 && note.getCountIs() == 1 && 
@@ -281,17 +325,23 @@ public class NoteParser {
 	}
 	
 	/**
-	 * Determine whether a string is a composite number declaration.
+	 * Determine whether an UnknownNote is a composite number declaration
+	 * based on metadata.
 	 * 
 	 * Composite number declarations have three components, in order:
 	 * 1) a cluster of intergalactic numerals, 2) the word 'is', 
 	 * and 3) a composite roman numeral.
 	 * 
-	 * @param note is a ParsedNote from intergalactic commodity notes
-	 * @return true if the given ParsedNote is a composite number 
+	 * @param note is an UnknownNote: the note to check
+	 * @throws IllegalArgumentException if the note is null
+	 * @return true if the given note is a composite number 
 	 * declaration, false otherwise.
 	 */
 	private boolean isCompositeNumDecl(UnknownNote note) {
+		
+		if (note == null) 
+			throw new IllegalArgumentException("note cannot be null");
+		
 		return note.getComponents().length > 3 && 
 			note.getCountIntergalClust() == 1 &&
 			note.getCountRomanComp() == 1 && note.getCountIs() == 1 && 
@@ -302,7 +352,8 @@ public class NoteParser {
 	}
 	
 	/**
-	 * Determine whether a string is a commodity declaration.
+	 * Determine whether an UnknownNote is a commodity declaration
+	 * based on metadata.
 	 * 
 	 * Commodity declarations have the following components, in order:
 	 * 1) a cluster of intergalactic numerals, 2) a commodity,
@@ -313,12 +364,16 @@ public class NoteParser {
 	 * to roman numeral translation if the base intergalactic numerals
 	 * are not well known.
 	 * 
-	 * @param note is a string formatted as single line from 
-	 * intergalactic commodity notes
-	 * @return true if the given string is a commodity declaration,
+	 * @param note is an UnknownNote: the note to check
+	 * @throws IllegalArgumentException if the note is null
+	 * @return true if the given note is a commodity declaration,
 	 * false otherwise.
 	 */
 	public boolean isCommodityDecl(UnknownNote note) {
+		
+		if (note == null) 
+			throw new IllegalArgumentException("note cannot be null");
+		
 		return note.getComponents().length > 4 && 
 				note.getCountIntergalClust() == 1 &&
 				note.getCountCredits() == 1 && note.getCountIs() == 1 && 
@@ -332,50 +387,21 @@ public class NoteParser {
 	}
 	
 	/**
-	 * Determine whether a string is a query.
+	 * Determine whether an UnknownNote is a query based on metadata.
 	 * 
-	 * Queries begin with 'how', followed by 'much' or 'many', end
-	 * with '?', and have one 'is' somewhere in between. 
+	 * This test is very simple: true if the final component of the 
+	 * note is '?', false otherwise.
 	 * 
-	 * Does not determine whether the query asks an answerable question.
+	 * This is by design; a '?' at the last position means a note is
+	 * query regardless of whether the query makes sense or is 
+	 * answerable; the latter determinations are left to 
+	 * the query handler.
 	 * 
-	 * @param note a string formatted as single line from intergalactic
-	 * commodity notes
-	 * @return true if the given string is a query, false otherwise.
+	 * @param note is an UnkownNote: the note to check
+	 * @throws IllegalArgumentException if the note is null
+	 * @return true if the given note is a query, false otherwise.
 	 */
 	public boolean isQuery(UnknownNote note) {
 		return note.getqPos() == note.getComponents().length-1;
-	}
-	
-	/**
-	 * Determine whether a parsed note has legal syntax.
-	 * 
-	 * Not complete/bullet-proof, could expand. Only checks raw
-	 * counts of relevant data, not, for example, relative positions of data.
-	 * 
-	 * @param note is a ParsedNote: the note to check
-	 * @return true if the note has illegal syntax, false otherwise
-	 */
-	public boolean isIllegal(UnknownNote note) {
-		
-		// check raw counts
-		if (note.getCountIs() > 1) return true;
-		if (note.getCountQ() > 1) return true;
-		if (note.getCountHow() > 1) return true;
-		if (note.getCountMuch() > 1) return true;
-		if (note.getCountMany() > 1) return true;
-		if (note.getCountArabic() > 1) return true;
-		if (note.getCountCredits() > 1) return true;
-		if (note.getCountRomanBase() > 1) return true;
-		if (note.getCountRomanComp() > 1) return true;
-		if (note.getCountIntergalClust() > 2) return true;
-		if (note.getCountComm() > 2) return true;
-		
-		// check combinations
-		if (note.getCountMany() + note.getCountMuch() > 1) return true;
-		if (note.getCountRomanBase() + note.getCountRomanComp() > 1) 
-			return true;
-		
-		return false;
 	}
 }

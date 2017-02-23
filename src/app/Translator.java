@@ -109,7 +109,6 @@ public class Translator {
 		intergalNumRank.put(baseIntergalNum, rank);
 		rankToRomanNum[rank] = baseRomanNum;
 		numPairs++;
-		//System.out.println("set " + baseIntergalNum);
 	}
 	
 	/**
@@ -291,7 +290,8 @@ public class Translator {
 	 * has been used in a subtraction
 	 * @throws NullPointerException if the roman numeral is null, and
 	 * IllegalArgumentException if the roman numeral is not well formed
-	 * @return 
+	 * @return an int: the arabic numeral representing the next legal
+	 * portion of the given roman numeral.
 	 */
 	private static int romanNumToArabicRecurse(String romanNumeral, 
 			boolean[][] used) {
@@ -415,11 +415,6 @@ public class Translator {
 	 */
 	public static String arabicNumToRoman(int arabicNumeral) {
 		
-		// A number written in Arabic numerals can be broken into digits. 
-		// For example, 1903 is composed of 1, 9, 0, and 3. To write the Roman 
-		// numeral, each of the non-zero digits should be treated separately. 
-		// In the above example, 1,000 = M, 900 = CM, and 3 = III. 
-		// Therefore, 1903 = MCMIII.
 		if (arabicNumeral < 1 || arabicNumeral > 3999)
 			throw new IllegalArgumentException("Given int '" + arabicNumeral
 					+ " is outside valid range. Under strict interpretation, "
@@ -445,7 +440,7 @@ public class Translator {
 	}
 	
 	/**
-	 * Private helper method for converting an arabic numeral to roman
+	 * Helper method for converting an arabic numeral to roman
 	 * numeral by digit.
 	 * 
 	 * @param value is a positive int between 1 and 9, inclusive
@@ -511,7 +506,7 @@ public class Translator {
 		return rankToRomanNum;
 	}
 	
-	private int getNumPairs() {
+	public int getNumPairs() {
 		return numPairs;
 	}
 }
