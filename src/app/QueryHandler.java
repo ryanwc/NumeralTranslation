@@ -70,8 +70,8 @@ public class QueryHandler {
 	 */
 	private void handleMuchQ(Query q) {
 		try {
-			String answer = q.intergalNum + " is ";
-			answer += translator.intergalNumToArabic(q.intergalNum);
+			String answer = q.getIntergalNum() + " is ";
+			answer += translator.intergalNumToArabic(q.getIntergalNum());
 			System.out.println(answer);	
 		} catch (Exception e) {
 			System.out.println("I don't know how to answer '" 
@@ -91,10 +91,11 @@ public class QueryHandler {
 	private void handleManyQ(Query q) {
 		// format to show decimal only if necessary
 		try {
-			int aCommAmnt = translator.intergalNumToArabic(q.intergalNum);
-			BigDecimal aCommPrice = ledger.getCreditPrice(q.commodity).
+			int aCommAmnt = translator.intergalNumToArabic(q.getIntergalNum());
+			BigDecimal aCommPrice = ledger.getCreditPrice(q.getCommodity()).
 					multiply(new BigDecimal(aCommAmnt));
-			String answer = q.intergalNum + " " + q.commodity + " is ";
+			String answer = q.getIntergalNum() + " " + q.getCommodity() 
+				+ " is ";
 			answer += priceOutFormat.format(aCommPrice) + " Credits";
 			System.out.println(answer);
 		} catch (Exception e) {

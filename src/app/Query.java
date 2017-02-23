@@ -17,8 +17,8 @@ public class Query extends ParsedNote {
 
 	// if have commodity, it's a 'many' question
 	// if not, it's a 'much' question
-	String commodity, intergalNum;
-	int intergalNumLength;
+	private String commodity, intergalNum;
+	private int intergalNumLength;
 	
 	/**
 	 * Create a new Query from an UnknownNote.

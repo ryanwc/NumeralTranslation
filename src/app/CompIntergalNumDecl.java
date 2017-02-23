@@ -7,10 +7,10 @@ package app;
  * A composite intergalactic numeral declaration has the following form:
  * '[intergal num longer than 1 word] is [roman num longer than 1 char]'
  * 
- * NOTE: This class is currently not in use. It is incomplete and provided
+ * NOTE: This class is not used by the example input. It is provided
  * as a demonstration on how the application can be expanded.
- * It is useful for giving the translator more complete information from 
- * spotty or incomplete notes. For example, if we have:
+ * 
+ * For example, if we have:
  * 1. prok is I
  * 2. prok glob is IV
  * 3. how much is glob ?
