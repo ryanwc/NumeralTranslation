@@ -31,22 +31,21 @@ public class NoteParser {
 	 * is the list of strings in the given notes that have the
 	 * type NOTE_TYPE.
 	 */
-	public Map<Integer, List<ParsedNote>> parseNotes(List<String> notes) {
+	public Map<String, List<ParsedNote>> parseNotes(List<String> notes) {
 		
-		Map<Integer, List<ParsedNote>> parsedNotes = 
-				new HashMap<Integer, List<ParsedNote>>();
-		
-		for (int i = 0; i < NOTE_TYPES.length; i++)
-			parsedNotes.put(NOTE_TYPES[i], new ArrayList<ParsedNote>());
+		Map<String, List<ParsedNote>> parsedNotes = 
+				new HashMap<String, List<ParsedNote>>();
 		
 		// parse each given note and group with like notes
 		List<ParsedNote> similarNotes;
 		ParsedNote parsedNote;
-		int noteType;
+		String noteType;
 		for (String note : notes) {
 			parsedNote = parse(note);
-			noteType = getNoteType(parsedNote);
-			parsedNote.noteType = noteType;
+			noteType = parsedNote.getClass().getName();
+			if (!parsedNotes.containsKey(noteType))
+				parsedNotes.put(parsedNote.getClass().getName(), 
+						new ArrayList<ParsedNote>());
 			similarNotes = parsedNotes.get(noteType);
 			similarNotes.add(parsedNote);
 			parsedNotes.put(noteType, similarNotes);
@@ -186,13 +185,15 @@ public class NoteParser {
 			}
 		}
 		
-		return new ParsedNote(note, components, countIs, countIntergalClust, 
-				countRomanBase, countRomanComp, countComm, countQ, 
-				countArabic, countCredits, countHow, countMuch, countMany, 
-				isPos, start1IntergalClust, end1IntergalClust, 
-				start2IntergalClust, end2IntergalClust, romanPos, comm1Pos, 
-				comm2Pos, qPos, arabicPos, creditPos, 
+		UnknownNote uNote = new UnknownNote(note, components, countIs, 
+				countIntergalClust, countRomanBase, countRomanComp, 
+				countComm, countQ, countArabic, countCredits, countHow, 
+				countMuch, countMany, isPos, start1IntergalClust, 
+				end1IntergalClust, start2IntergalClust, end2IntergalClust, 
+				romanPos, comm1Pos, comm2Pos, qPos, arabicPos, creditPos, 
 				howPos, muchPos, manyPos);
+		
+		return identifyNote(uNote);
 	}
 	
 	private boolean isArabic(String str) {
@@ -249,15 +250,15 @@ public class NoteParser {
 	 * @return an int representing the type of intergalactic commodity
 	 * information the given note holds
 	 */
-	public int getNoteType(ParsedNote note) {
+	public ParsedNote identifyNote(UnknownNote note) {
 		
-		if (isQuery(note)) return QUERY;
-		if (isBaseNumDecl(note)) return BASE_NUM_DECL;
-		if (isCompositeNumDecl(note)) return COMPOSITE_NUM_DECL;
-		if (isCommodityDecl(note)) return COMMODITY_DECL;
+		if (isQuery(note)) return new Query(note);
+		if (isBaseNumDecl(note)) return new BaseIntergalNumDecl(note);
+		if (isCompositeNumDecl(note)) return new CompIntergalNumDecl(note);
+		if (isCommodityDecl(note)) return new CommodityDecl(note);
 		
-		// note does not conform to any known note types
-		return UNKNOWN;
+		// note does not conform to any known note types, return unchanged
+		return note;
 	}
 	
 	/**
@@ -271,12 +272,13 @@ public class NoteParser {
 	 * @return true if the given ParsedNote is a base number declaration,
 	 * false otherwise.
 	 */
-	private boolean isBaseNumDecl(ParsedNote note) {
-		return note.components.length == 3 && note.countIntergalClust == 1 &&
-			note.countRomanBase == 1 && note.countIs == 1 && 
-			note.romanPos == 2 && note.isPos == 1 &&
-			note.start1IntergalClust == 0 && 
-			note.end1IntergalClust == 0;
+	private boolean isBaseNumDecl(UnknownNote note) {
+		return note.getComponents().length == 3 && 
+			note.getCountIntergalClust() == 1 &&
+			note.getCountRomanBase() == 1 && note.getCountIs() == 1 && 
+			note.getRomanPos() == 2 && note.getIsPos() == 1 &&
+			note.getStart1IntergalClust() == 0 && 
+			note.getEnd1IntergalClust() == 0;
 	}
 	
 	/**
@@ -290,13 +292,14 @@ public class NoteParser {
 	 * @return true if the given ParsedNote is a composite number 
 	 * declaration, false otherwise.
 	 */
-	private boolean isCompositeNumDecl(ParsedNote note) {
-		return note.components.length > 3 && note.countIntergalClust == 1 &&
-			note.countRomanComp == 1 && note.countIs == 1 && 
-			note.romanPos == note.components.length-1 && 
-			note.isPos == note.components.length-2 &&
-			note.start1IntergalClust == 0 && 
-			note.end1IntergalClust == note.components.length-3;
+	private boolean isCompositeNumDecl(UnknownNote note) {
+		return note.getComponents().length > 3 && 
+			note.getCountIntergalClust() == 1 &&
+			note.getCountRomanComp() == 1 && note.getCountIs() == 1 && 
+			note.getRomanPos() == note.getComponents().length-1 && 
+			note.getIsPos() == note.getComponents().length-2 &&
+			note.getStart1IntergalClust() == 0 && 
+			note.getEnd1IntergalClust() == note.getComponents().length-3;
 	}
 	
 	/**
@@ -316,16 +319,17 @@ public class NoteParser {
 	 * @return true if the given string is a commodity declaration,
 	 * false otherwise.
 	 */
-	public boolean isCommodityDecl(ParsedNote note) {
-		return note.components.length > 4 && note.countIntergalClust == 1 &&
-				note.countCredits == 1 && note.countIs == 1 && 
-				note.countArabic == 1 && 
-				note.creditPos == note.components.length-1 &&
-				note.arabicPos == note.components.length-2 &&
-				note.isPos == note.components.length-3 &&
-				note.comm1Pos == note.components.length - 4 &&
-				note.start1IntergalClust == 0 && 
-				note.end1IntergalClust == note.components.length-5;
+	public boolean isCommodityDecl(UnknownNote note) {
+		return note.getComponents().length > 4 && 
+				note.getCountIntergalClust() == 1 &&
+				note.getCountCredits() == 1 && note.getCountIs() == 1 && 
+				note.getCountArabic() == 1 && 
+				note.getCreditPos() == note.getComponents().length-1 &&
+				note.getArabicPos() == note.getComponents().length-2 &&
+				note.getIsPos() == note.getComponents().length-3 &&
+				note.getComm1Pos() == note.getComponents().length - 4 &&
+				note.getStart1IntergalClust() == 0 && 
+				note.getEnd1IntergalClust() == note.getComponents().length-5;
 	}
 	
 	/**
@@ -340,8 +344,8 @@ public class NoteParser {
 	 * commodity notes
 	 * @return true if the given string is a query, false otherwise.
 	 */
-	public boolean isQuery(ParsedNote note) {
-		return note.qPos == note.components.length-1;
+	public boolean isQuery(UnknownNote note) {
+		return note.getqPos() == note.getComponents().length-1;
 	}
 	
 	/**
@@ -353,115 +357,26 @@ public class NoteParser {
 	 * @param note is a ParsedNote: the note to check
 	 * @return true if the note has illegal syntax, false otherwise
 	 */
-	public boolean isIllegal(ParsedNote note) {
+	public boolean isIllegal(UnknownNote note) {
 		
 		// check raw counts
-		if (note.countIs > 1) return true;
-		if (note.countQ > 1) return true;
-		if (note.countHow > 1) return true;
-		if (note.countMuch > 1) return true;
-		if (note.countMany > 1) return true;
-		if (note.countArabic > 1) return true;
-		if (note.countCredits > 1) return true;
-		if (note.countRomanBase > 1) return true;
-		if (note.countRomanComp > 1) return true;
-		if (note.countIntergalClust > 2) return true;
-		if (note.countComm > 2) return true;
+		if (note.getCountIs() > 1) return true;
+		if (note.getCountQ() > 1) return true;
+		if (note.getCountHow() > 1) return true;
+		if (note.getCountMuch() > 1) return true;
+		if (note.getCountMany() > 1) return true;
+		if (note.getCountArabic() > 1) return true;
+		if (note.getCountCredits() > 1) return true;
+		if (note.getCountRomanBase() > 1) return true;
+		if (note.getCountRomanComp() > 1) return true;
+		if (note.getCountIntergalClust() > 2) return true;
+		if (note.getCountComm() > 2) return true;
 		
 		// check combinations
-		if (note.countMany + note.countMuch > 1) return true;
-		if (note.countRomanBase + note.countRomanComp > 1) return true;
+		if (note.getCountMany() + note.getCountMuch() > 1) return true;
+		if (note.getCountRomanBase() + note.getCountRomanComp() > 1) 
+			return true;
 		
 		return false;
-	}
-	
-	/**
-	 * Store metadata from a parsed note (single line of notes).
-	 * Allows constant-time reuse of info learned from linear parsing routine
-	 * (e.g., by note type checks, QueryHandler, Translator).
-	 * 
-	 * Non-existant represented as '-1'. For example, if there is no 'is',
-	 * isPos = -1.
-	 */
-	public class ParsedNote {
-		String note;
-		String[] components;
-		int countIs, countIntergalClust, countRomanBase, 
-			countRomanComp, countComm, countQ,
-			countArabic, countCredits, countHow, countMuch, countMany, isPos, 
-			start1IntergalClust, end1IntergalClust, start2IntergalClust, 
-			end2IntergalClust, romanPos, comm1Pos, comm2Pos, qPos, arabicPos, 
-			creditPos, howPos, muchPos, manyPos, noteType;
-		
-		public ParsedNote(String note, String[] components, int countIs, 
-				int countIntergalClust, int countRomanBase,
-				int countRomanComp, int countComm, 
-				int countQ, int countArabic, int countCredits, int countHow, 
-				int countMuch, int countMany, int isPos, 
-				int start1IntergalClust, int end1IntergalClust, 
-				int start2IntergalClust, int end2IntergalClust, int romanPos, 
-				int comm1Pos, int comm2Pos, int qPos, int arabicPos, 
-				int creditPos, int howPos, int muchPos, int manyPos) {
-			
-			this.note = note;
-			this.components = components;
-			this.countIs = countIs;
-			this.countIntergalClust = countIntergalClust;
-			this.countRomanBase = countRomanBase;
-			this.countRomanComp = countRomanComp;
-			this.countComm = countComm;
-			this.countQ = countQ;
-			this.countArabic = countArabic;
-			this.countCredits = countCredits;
-			this.countHow = countHow;
-			this.countMuch = countMuch;
-			this.countMany = countMany;
-			this.isPos = isPos;
-			this.start1IntergalClust = start1IntergalClust;
-			this.end1IntergalClust = end1IntergalClust;
-			this.start2IntergalClust = start2IntergalClust;
-			this.end2IntergalClust = end2IntergalClust;
-			this.romanPos = romanPos;
-			this.comm1Pos = comm1Pos;
-			this.comm2Pos = comm2Pos;
-			this.qPos = qPos;
-			this.arabicPos = arabicPos;
-			this.creditPos = creditPos;
-			this.howPos = howPos;
-			this.muchPos = muchPos;
-			this.manyPos = manyPos;
-			
-			this.noteType = -1;
-		}
-		
-		public String toString() {
-			
-			String str = "";
-			str += note;
-			str += '\n';
-			str += "Components: ";
-			for (int i = 0; i < components.length; i++) {
-				str += "'" + components[i] + "', ";
-			}
-			str += '\n';
-			str += "Cis: " + countIs + ", CIntCl: " + countIntergalClust + 
-					", CRomB: " + countRomanBase + ", CRomC: " + countRomanComp 
-					+ ", CCm: " + countComm + ", CQ: " + countQ + ", CA: " + 
-					countArabic + ", CCr: " + countCredits + ", CH: " + 
-					countHow + ", CMu: " + countMuch + ", CM: " + countMany;
-			str += '\n';
-			str += "isP: " + isPos + ", " + "sIC1: " + start1IntergalClust 
-					+ ", eIC1: " + end1IntergalClust + ", sIC2: " +
-					+ start2IntergalClust + ", eIC2: " + end2IntergalClust + 
-					", RP: " + romanPos + ", C1P: " + comm1Pos + 
-					", C2P: " + comm2Pos + ", QP: " + qPos + 
-					", AP: " + arabicPos + ", credP: " + creditPos + 
-					", HP: " + howPos + ", muchP: " + muchPos + 
-					", manyP: " + manyPos;
-			str += '\n';
-			str += "Note type: " + noteType;
-				
-			return str;
-		}
 	}
 }

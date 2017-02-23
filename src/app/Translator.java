@@ -164,23 +164,101 @@ public class Translator {
 		numPairs--;
 	}
 	
-	/*
+	/**
+	 * Convert an intergal numeral to an arabic numeral.
+	 * 
+	 * @param intergalNum is a string: the intergal numeral 
+	 * to convert
+	 * @return an int: the arabic numeral representing the
+	 * given intergal numeral.
+	 */
 	public int intergalNumToArabic(String intergalNum) {
 
+		String romanNum = intergalNumToRoman(intergalNum);
+		return romanNumToArabic(romanNum);
 	}
 	
+	/**
+	 * Convert an arabic numeral to a Roman numeral.
+	 * 
+	 * @param arabicNum is an int, the arabic numeral to conver
+	 * @return a string: the intergal numeral representing the given
+	 * arabic numeral.
+	 */
 	public String arabicNumToIntergal(int arabicNum) {
 
+		String romanNum = arabicNumToRoman(arabicNum);
+		return romanNumToIntergal(romanNum);
 	}
 	
+	/**
+	 * Convert a number from intergal numerals to roman numerals.
+	 * 
+	 * WARNING: Does not guarantee the intergal numeral is well formed,
+	 * which means the returned roman numeral may not be well formed.
+	 * To check, can run the returned string through translation
+	 * from roman numeral to arabic numeral.
+	 * 
+	 * @param intergalNum is a string: the intergal numeral to convert
+	 * @throws an IllegalArgumentException if a word within the given
+	 * intergal numeral is not a base intergal numeral or if the translator 
+	 * does not know the corresponding base roman numeral for a given base 
+	 * intergal numeral.
+	 * @return a string: the roman numeral corresponding to the 
+	 * given intergal numeral.
+	 */
 	public String intergalNumToRoman(String intergalNum) {
 		
+		String romanNum = "";
+		String[] baseIGnums = intergalNum.split(" ");
+		
+		Integer rank;
+		for (int i = 0; i < baseIGnums.length; i++) {
+			rank = intergalNumRank.get(baseIGnums[i]);
+			if (rank == null) 
+				throw new IllegalArgumentException("Intergal numeral to Roman"
+						+ " numeral translation failed: the Roman numeral for"
+						+ baseIGnums[i] + " is not recorded.");
+			romanNum += rankToRomanNum[rank];
+		}
+		
+		return romanNum;
 	}
 	
+	/**
+	 * Convert a number from roman numerals to intergal numerals.
+	 * 
+	 * WARNING: Does not guarantee the roman is well formed,
+	 * which means the returned intergal numeral may not be well formed.
+	 * To check, can run the roman numeral first through translation
+	 * to arabic numeral.
+	 * 
+	 * @param romanNum is a string: the roman numeral to convert
+	 * @throws an IllegalArgumentException if a character within the given
+	 * roman numeral is not a base roman numeral or if the translator 
+	 * does not know the corresponding intergal numeral for a given base 
+	 * roman numeral.
+	 * @return a string: the intergal numeral corresponding to the 
+	 * given roman numeral.
+	 */
 	public String romanNumToIntergal(String romanNum) {
+	
+		String intergalNum = "";
 		
+		Integer rank;
+		String baseR;
+		for (int i = 0; i < romanNum.length(); i++) {
+			baseR = romanNum.substring(i, i+1);
+			rank = ROMAN_NUM_RANK.get(baseR);
+			if (rank == null) 
+				throw new IllegalArgumentException("Roman numeral to intergal"
+						+ " numeral translation failed: '" + baseR + " is not"
+						+ " a base Roman numeral");
+			intergalNum += rankToIntergalNum[rank];
+		}
+		
+		return intergalNum;
 	}
-	*/
 	
 	/**
 	 * Convert a roman numeral to an arabic numeral.

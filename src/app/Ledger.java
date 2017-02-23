@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import app.NoteParser.ParsedNote;
-
 /**
  * Bookkeep information about prices of various commodities.
  * 
@@ -17,9 +15,11 @@ import app.NoteParser.ParsedNote;
 public class Ledger {
 
 	private Map<String, PricePair> priceBook;
+	Translator translator;
 	
-	public Ledger() {
+	public Ledger(Translator translator) {
 		this.priceBook = new HashMap<String, PricePair>();
+		this.translator = translator;
 	}
 	
 	public Ledger(Set<String> entries) {
@@ -64,8 +64,36 @@ public class Ledger {
 		return priceBook.get(commodity).getIntergalPrice();
 	}
 	
-	public void recordCommDecl(ParsedNote pNote) {
-		// to do
+	/**
+	 * Record a commodity price in the ledger.
+	 * 
+	 * Assumes the commodity declaration is well-formed.
+	 * 
+	 * @param cDec is a CommodityDecl with the commodity and price
+	 * information to record in the ledger.
+	 * @param overwrite is a boolean: pass true to overwrite any existing
+	 * prices, false to overwrite only null prices
+	 */
+	public void recordCommDecl(CommodityDecl cDec, boolean overwrite) {
+		
+		String commodity = cDec.getCommodity();
+		int arabicNum = cDec.getArabicNum();
+		String intergalNum = cDec.getIntergalNum();
+		
+		PricePair prices = priceBook.containsKey(commodity) ? 
+			priceBook.get(commodity) : new PricePair(arabicNum, intergalNum);
+			
+		if (overwrite) {
+			priceBook.put(commodity, prices);
+		}
+		else {
+			// if not overwrite, only add if null
+			if (prices.getCreditPrice() != null)
+				prices.setCreditPrice(arabicNum);
+			if (prices.getIntergalPrice() != null)
+				prices.setIntergalPrice(intergalNum);
+			priceBook.put(commodity, prices);
+		}
 	}
 	
 	/**

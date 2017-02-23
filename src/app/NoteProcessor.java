@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import app.NoteParser.ParsedNote;
-
 /**
  * Merchant's Guide to the Galaxy.
  * fly all over the galaxy to sell common metals and dirt 
@@ -33,7 +31,7 @@ import app.NoteParser.ParsedNote;
 public class NoteProcessor {
 
 	List<String> rawNotes;
-	Map<Integer, List<ParsedNote>> parsedNotes;
+	Map<String, List<ParsedNote>> parsedNotes;
 	NoteParser parser;
 	Ledger ledger;
 	QueryHandler qHandler;
@@ -86,9 +84,14 @@ public class NoteProcessor {
     	*/
         
         // send base intergal declarations to the translator
-        for (ParsedNote baseDec : processor.parsedNotes.get(NoteParser.BASE_NUM_DECL)) {
-        	String[] components = baseDec.components;
-        	processor.translator.setIntergalToRomanValue(components[0], components[2]);
+        for (ParsedNote pNote : processor.parsedNotes.
+        							get("BaseIntergalNumDecl")) {
+        	if (pNote instanceof BaseIntergalNumDecl) {
+        		BaseIntergalNumDecl dec = ((BaseIntergalNumDecl)pNote);
+        		processor.translator.
+        			setIntergalToRomanValue(dec.getBaseRomanNum(), 
+        					dec.getBaseRomanNum());
+        	}
         }
         
         /*
@@ -100,8 +103,12 @@ public class NoteProcessor {
         */
         
         // send commodity declarations to the ledger
-        for (ParsedNote commDec : processor.parsedNotes.get(NoteParser.COMMODITY_DECL))
-        	processor.ledger.recordCommDecl(commDec);
+        for (ParsedNote pNote : processor.parsedNotes.get("CommodityDecl")) {
+        	if (pNote instanceof CommodityDecl) {
+        		CommodityDecl cDec = ((CommodityDecl) pNote);
+            	processor.ledger.recordCommDecl(cDec);
+        	}
+        }
         
         // output stats, for fun
         /*
@@ -113,16 +120,25 @@ public class NoteProcessor {
         */
         
         // handle queries
-        for (ParsedNote query : processor.parsedNotes.get(NoteParser.QUERY))
-        	processor.qHandler.answer(query);
+        for (ParsedNote pNote : processor.parsedNotes.get("Query"))
+        	if (pNote instanceof Query) {
+        		Query q = ((Query)pNote);
+        		processor.qHandler.answer(q);
+        	}
 	}
 	
+	/**
+	 * Create a new NoteProcessor.
+	 * 
+	 * @param notes is a list of strings, which is the set of raw notes
+	 * to process.
+	 */
 	public NoteProcessor(List<String> notes) {
 		
 		this.rawNotes = notes;
 		this.parser = new NoteParser();
-		this.ledger = new Ledger();
-		this.qHandler = new QueryHandler();
 		this.translator = new Translator();
+		this.ledger = new Ledger(translator);
+		this.qHandler = new QueryHandler(translator, ledger);
 	}
 }
