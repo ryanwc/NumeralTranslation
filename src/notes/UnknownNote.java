@@ -1,18 +1,18 @@
 package notes;
 
 /**
- * Store metadata from a parsed note (single line of notes) of unknown type.
+ * An unknown note holds useful information about a line of notes about the 
+ * intergalactic commodity markets.
  * 
  * Stores useful data from initial parsing for later
  * analysis and classification. Allows constant-time reuse of this data.
+ * Non-existant data is represented as '-1'. For example, if there is no 
+ * 'is', isPos = -1.
  * 
  * Suggestion applications:
  * 1) Check metadata against known note types, then create a new
  * instance of a matching note.
  * 1) Store for later analysis.
- * 
- * Non-existant data is represented as '-1'.
- * For example, if there is no 'is', isPos = -1.
  * 
  * @author ryanwilliamconnor
  */
@@ -26,13 +26,87 @@ public class UnknownNote extends ParsedNote {
 		creditPos, howPos, muchPos, manyPos;
 	
 	/**
-	 * Create a new UnknownNote.
+	 * Create an unparsed UnknownNote, with stats initialized to 0 for counts
+	 * and -1 for positions.
 	 * 
-	 * An unknown note holds useful information about a
-	 * line of notes about the intergalactic commodity markets.
-	 * 
-	 * Non-existant data is represented as '-1'.
-	 * For example, if there is no 'is', isPos = -1.
+	 * @param note is a string: the raw note
+	 * @param components is a string array: the words, numerals, and
+	 * question mark (if any) of the raw note
+	 * @param countIs is an int: the number of times 'is' appears in the note
+	 * @param countIntergalClust is an int: the number clusters of
+	 * intergalactic numerals in the note
+	 * @param countRomanBase is an int: the number of base roman numerals in
+	 * the note
+	 * @param countRomanComp is an int: the number of composite roman 
+	 * numerals in the note
+	 * @param countComm is an int: the number of commodities in the note
+	 * @param countQ is an int: the number of '?' in the note
+	 * @param countArabic is an int: the number of arabic numerals in the note
+	 * @param countCredits is an int: the number of 'Credits' appears 
+	 * in the note
+	 * @param countHow is an int: the number of times 'how' appears in the note
+	 * @param countMuch is an int: the number of times 'much' appears 
+	 * in the note
+	 * @param countMany is an int: the number of times 'many' appears 
+	 * in the note
+	 * @param isPos is an int: the index of the last 'is' in 'components'
+	 * @param start1IntergalClust is an int: the index of the first 
+	 * base numeral in the first intergalactic numeral cluster in 'components'
+	 * @param end1IntergalClust is an int: the index of the last 
+	 * base numeral in the first intergalactic numeral cluster in 'components'
+	 * @param start2IntergalClust is an int: the index of the first 
+	 * base numeral in the last intergalactic numeral cluster in 'components'
+	 * @param end2IntergalClust is an int: the index of the second 
+	 * base numeral in the last intergalactic numeral cluster in 'components'
+	 * @param romanPos is an int: the index of the last roman numeral in 
+	 * 'components'
+	 * @param comm1Pos is an int: the index of the first commodity in 
+	 * 'components'
+	 * @param comm2Pos is an int: the index of the last commodity
+	 * in 'components'
+	 * @param qPos is an int: the last '?' in 'components'
+	 * @param arabicPos is an int: the index of the last arabic numeral 
+	 * in 'components'
+	 * @param creditPos is an int: the index of the last 'Credits' 
+	 * in 'components'
+	 * @param howPos is an int: the index of the last 'how' 
+	 * in 'components'
+	 * @param muchPos is an int: the index of the last 'much' 
+	 * in 'components'
+	 * @param manyPos is an int: the index of the last 'many' 
+	 * in 'components'
+	 */
+	public UnknownNote(String note) {
+		super(note, note.split(" "));
+		this.countIntergalClust = 0;
+		this.countRomanBase = 0;
+		this.countRomanComp = 0;
+		this.countComm = 0;
+		this.countQ = 0;
+		this.countArabic = 0;
+		this.countCredits = 0;
+		this.countHow = 0;
+		this.countMuch = 0;
+		this.countMany = 0;
+		this.isPos = -1;
+		this.start1IntergalClust = -1;
+		this.end1IntergalClust = -1;
+		this.start2IntergalClust = -1;
+		this.end2IntergalClust = -1;
+		this.romanPos = -1;
+		this.comm1Pos = -1;
+		this.comm2Pos = -1;
+		this.qPos = -1;
+		this.arabicPos = -1;
+		this.creditPos = -1;
+		this.howPos = -1;
+		this.muchPos = -1;
+		this.manyPos = -1;		
+	}
+	
+	/**
+	 * Create a new UnknownNote with the given stats. Makes no guarantees
+	 * whether the given stats match the given note and components.
 	 * 
 	 * @param note is a string: the raw note
 	 * @param components is a string array: the words, numerals, and

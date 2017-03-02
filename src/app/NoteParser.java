@@ -79,117 +79,264 @@ public class NoteParser {
 	 */
 	public ParsedNote parse(String note) {
 		
-		// split into just words and question marks
-		// (remove white space, all punctuation except '?')
-		String[] components = note.split("[^a-zA-Z_0-9\\?]");
+		// create an unknown note with clean data 
+		UnknownNote uNote = new UnknownNote(note);
+		int numComponents = uNote.getComponents().length;
 		
-		// initialize counts of interesting data
-		int countIs=0, countIntergalClust=0, countRomanBase=0, 
-				countRomanComp=0, countComm=0,countQ=0, countArabic=0, 
-				countCredits=0, countHow=0, countMuch=0, countMany=0;
-		
-		// set indices of non-existent data to -1
-		int isPos=-1, start1IntergalClust=-1, end1IntergalClust=-1,
-				start2IntergalClust=-1, end2IntergalClust=-1, 
-				romanPos=-1, comm1Pos=-1, comm2Pos=-1, qPos=-1, 
-				arabicPos=-1, creditPos=-1, howPos=-1, muchPos=-1, manyPos=-1;
-		
-		// gather data
-		for (int i = 0; i < components.length; i++) {
-			if (components[i].equals("is")) {
-				isPos = i;
-				countIs++;
-				continue;
-			}
-			if (components[i].equals("Credits")) {
-				countCredits++;
-				creditPos = i;
-				continue;
-			}
-			if (components[i].equals("how")) {
-				countHow++;
-				howPos = i;
-				continue;
-			}
-			if (components[i].equals("much")) {
-				countMuch++;
-				muchPos = i;
-				continue;
-			}
-			if (components[i].equals("many")) {
-				countMany++;
-				manyPos = i;
-				continue;
-			}
-			if (components[i].equals("?")) {
-				countQ++;
-				qPos = i;
-				continue;
-			}
-			if (isArabic(components[i])) {
-				countArabic++;
-				arabicPos = i;
-				continue;
-			}
-			if (isCommodity(components[i])) {
-				// redundant check on !=Credits because if series above
-				if (countComm == 0) {
-					comm1Pos = i;
-				}
-				else {
-					comm2Pos = i;
-				}
-				countComm++;
-				continue;
-			}
-			if (Translator.ROMAN_NUM_RANK.containsKey(components[i])) {
-				countRomanBase++;
-				romanPos = i;
-				continue;
-			}
-			try {
-				// composite roman numeral check
-				Translator.romanNumToArabic(components[i]);
-				countRomanComp++;
-				romanPos = i;
-				continue;
-			} catch (IllegalArgumentException e) {
-				// move to next test
-			}
-			if (isIntergalNum(components[i])) {
-				// checks on != how, is, much redundant in this if series
-				if (countIntergalClust == 0) {
-					start1IntergalClust = i;
-				}
-				else {
-					start2IntergalClust = i;
-				}
-				countIntergalClust++;
-				// from the start of this cluster, count intergal nums
-				// set end of cluster and i appropriately
-				do {
-					i++;
-				} while (isIntergalNum(components[i]));
-				i--;
-				if (countIntergalClust == 1) {
-					end1IntergalClust = i;
-				}
-				else {
-					end2IntergalClust = i;
-				}
-			}
+		// parse the note (set its metadata)
+		for (int i = 0; i < numComponents; i++) {
+			if (checkAndSetIs(uNote, i)) continue;
+			if (checkAndSetCredits(uNote, i)) continue;
+			if (checkAndSetHow(uNote, i)) continue;
+			if (checkAndSetMuch(uNote, i)) continue;
+			if (checkAndSetMany(uNote, i)) continue;
+			if (checkAndSetQ(uNote, i)) continue;
+			if (checkAndSetArabic(uNote, i)) continue;
+			if (checkAndSetCommodity(uNote, i)) continue;
+			if (checkAndSetBaseRomanNum(uNote, i)) continue;
+			if (checkAndSetCompRomanNum(uNote, i)) continue;
+			if (checkAndSetStartIntergalNum(uNote, i))
+				i = setEndIntergalNum(uNote, i);
 		}
 		
-		// create an unknown note to be identified (or not)
-		UnknownNote uNote = new UnknownNote(note, components, countIs, 
-				countIntergalClust, countRomanBase, countRomanComp, 
-				countComm, countQ, countArabic, countCredits, countHow, 
-				countMuch, countMany, isPos, start1IntergalClust, 
-				end1IntergalClust, start2IntergalClust, end2IntergalClust, 
-				romanPos, comm1Pos, comm2Pos, qPos, arabicPos, creditPos, 
-				howPos, muchPos, manyPos);
-		
 		return identifyNote(uNote);
+	}
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is a commodity. If so, sets relevant data in the
+	 * unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */
+	private boolean checkAndSetCommodity(UnknownNote uNote, int index) {
+		if (isCommodity(uNote.getComponents()[index])) {
+			if (uNote.getCountComm() == 0) {
+				uNote.setComm1Pos(index);
+			}
+			else {
+				uNote.setComm2Pos(index);
+			}
+			uNote.setCountComm(uNote.getCountComm()+1);
+		}
+		return false;
+	} 
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is a base roman numeral. If so, sets relevant data in the
+	 * unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */
+	private boolean checkAndSetBaseRomanNum(UnknownNote uNote, int index) {
+		if (Translator.ROMAN_NUM_RANK.
+				containsKey(uNote.getComponents()[index])){
+			uNote.setRomanPos(index);
+			uNote.setCountRomanBase(uNote.getCountRomanBase()+1);
+		}
+		return false;
+	} 
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is a composite roman numeral. If so, sets relevant data
+	 * in the unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */
+	private boolean checkAndSetCompRomanNum(UnknownNote uNote, int index) {
+		try {
+			Translator.romanNumToArabic(uNote.getComponents()[index]);
+			uNote.setRomanPos(index);
+			uNote.setCountRomanComp(uNote.getCountRomanComp()+1);
+			return true;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	} 
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is a base intergal numeral. If so, sets relevant data 
+	 * in the unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */
+	private boolean checkAndSetStartIntergalNum(UnknownNote uNote, int index) {
+		if (isIntergalNum(uNote.getComponents()[index])) {	
+			if (uNote.getCountIntergalClust() == 0) {
+				uNote.setStart1IntergalClust(index);
+			}
+			else {
+				uNote.setStart2IntergalClust(index);
+			}
+			uNote.setCountIntergalClust(uNote.getCountIntergalClust()+1);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Sets the relevant info for the end of an intergal numeral cluster
+	 * given an unknown note and the index of the start of an intergal numeral
+	 * cluster within that note.
+	 * 
+	 * @param uNote: the note whose info to set
+	 * @param index: the index of the start of an intergal numeral cluster
+	 * @return an int: the index of the end of the intergal numeral cluster
+	 */
+	private int setEndIntergalNum(UnknownNote uNote, int index) {
+		// from the start of this intergal num cluster, count base 
+		// intergal nums, set end of cluster, and return end index
+		do {
+			index++;
+		} while (isIntergalNum(uNote.getComponents()[index]));
+		
+		index--;
+		
+		if (uNote.getCountIntergalClust() == 1) {
+			uNote.setEnd1IntergalClust(index);
+		}
+		else {
+			uNote.setEnd2IntergalClust(index);
+		}
+		
+		return index;
+	}
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is 'how'. If so, sets relevant data 
+	 * in the unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */	
+	private boolean checkAndSetHow(UnknownNote uNote, int index) {
+		if (uNote.getComponents()[index].equals("how")) {
+			uNote.setHowPos(index);
+			uNote.setCountHow(uNote.getCountHow()+1);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is 'much'. If so, sets relevant data 
+	 * in the unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */
+	private boolean checkAndSetMuch(UnknownNote uNote, int index) {
+		if (uNote.getComponents()[index].equals("much")) {
+			uNote.setMuchPos(index);
+			uNote.setCountMuch(uNote.getCountMuch()+1);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is 'many'. If so, sets relevant data 
+	 * in the unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */
+	private boolean checkAndSetMany(UnknownNote uNote, int index) {
+		if (uNote.getComponents()[index].equals("many")) {
+			uNote.setManyPos(index);
+			uNote.setCountMany(uNote.getCountMany()+1);
+			return true;
+		}
+		return false;
+	} 
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is '?'. If so, sets relevant data 
+	 * in the unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */
+	private boolean checkAndSetQ(UnknownNote uNote, int index) {
+		if (uNote.getComponents()[index].equals("?")) {
+			uNote.setqPos(index);
+			uNote.setCountQ(uNote.getCountQ()+1);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is an arabic numeral. If so, sets relevant data 
+	 * in the unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */
+	private boolean checkAndSetArabic(UnknownNote uNote, int index) {
+		if (isArabic(uNote.getComponents()[index])) {
+			uNote.setArabicPos(index);
+			uNote.setCountArabic(uNote.getCountArabic()+1);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is 'Credits'. If so, sets relevant data 
+	 * in the unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */
+	private boolean checkAndSetCredits(UnknownNote uNote, int index) {
+		if (uNote.getComponents()[index].equals("Credits")) {
+			uNote.setCreditPos(index);
+			uNote.setCountCredits(uNote.getCountCredits()+1);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks whether the component at the given index of the given
+	 * unknown note is 'is'. If so, sets relevant data 
+	 * in the unknown note and returns true. If not, returns false.
+	 * 
+	 * @param uNote: the note to check
+	 * @param index: the index of the note component to check
+	 * @return true if the check succeeded and info was set, false otherwise
+	 */
+	private boolean checkAndSetIs(UnknownNote uNote, int index) {
+		if (uNote.getComponents()[index].equals("is")) {
+			uNote.setIsPos(index);
+			uNote.setCountIs(uNote.getCountIs()+1);
+			return true;
+		}
+		return false;
 	}
 	
 	/**

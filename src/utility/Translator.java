@@ -285,9 +285,9 @@ public class Translator {
 	 * an arabic numeral.
 	 * 
 	 * @param romanNumeral is a string: the roman numeral to convert
-	 * @param wasInAdd: an boolean where wasInAdd[rank] is true if 
+	 * @param wasInAdd: a boolean where wasInAdd[rank] is true if 
 	 * the roman numeral of that rank has been used in an addition
-	 * @param wasInSubtract: an boolean where wasInSubtract[rank] is true if 
+	 * @param wasInSubtract: a boolean where wasInSubtract[rank] is true if 
 	 * the roman numeral of that rank has been used in a subtraction
 	 * @throws NullPointerException if the roman numeral is null, and
 	 * IllegalArgumentException if the roman numeral is not well formed
@@ -347,9 +347,11 @@ public class Translator {
 	}
 	
 	/**
+	 * Throw exception if the given base numeral violates addition rules
+	 * given previous usage in a roman numeral string. 
 	 * 
 	 * @param baseNum is the 
-	 * @param wasInAdd: an boolean where wasInAdd[rank] is true if 
+	 * @param wasInAdd: a boolean where wasInAdd[rank] is true if 
 	 * the roman numeral of that rank has been used in an addition
 	 */
 	private static void checkAdditionRules(String baseNum, boolean[] wasInAdd){
@@ -361,11 +363,11 @@ public class Translator {
 	
 	/**
 	 * Throw exception if the minuend and subtractor violate roman numeral
-	 * subtraction rules given previous usage.
+	 * subtraction rules given previous usage in a roman numeral string.
 	 * 
 	 * @param minuend
 	 * @param subtractor
-	 * @param wasInSubtract: an boolean where wasInSubtract[rank] is true if 
+	 * @param wasInSubtract: a boolean where wasInSubtract[rank] is true if 
 	 * the roman numeral of that rank has been used in a subtraction
 	 * an addition. 
 	 */
