@@ -276,7 +276,8 @@ public class Translator {
 			throw new IllegalArgumentException("Roman numeral can't be empty");
 		// sanity check each char is a base roman numeral before starting
 		return romanNumToArabicRecurse(romanNumeral,
-				new boolean[RANK_TO_VAL.length][2]);
+				new boolean[RANK_TO_VAL.length], 
+				new boolean[RANK_TO_VAL.length]);
 	}
 
 	/**
@@ -284,17 +285,17 @@ public class Translator {
 	 * an arabic numeral.
 	 * 
 	 * @param romanNumeral is a string: the roman numeral to convert
-	 * @param used: a 2D int boolean where used[rank][0] is true if 
-	 * the roman numeral of that rank has been used as a base, and
-	 * used[rank][1] returns true if the roman numeral of that rank
-	 * has been used in a subtraction
+	 * @param wasInAdd: an boolean where wasInAdd[rank] is true if 
+	 * the roman numeral of that rank has been used in an addition
+	 * @param wasInSubtract: an boolean where wasInSubtract[rank] is true if 
+	 * the roman numeral of that rank has been used in a subtraction
 	 * @throws NullPointerException if the roman numeral is null, and
 	 * IllegalArgumentException if the roman numeral is not well formed
 	 * @return an int: the arabic numeral representing the next legal
 	 * portion of the given roman numeral.
 	 */
 	private static int romanNumToArabicRecurse(String romanNumeral, 
-			boolean[][] used) {
+			boolean[] wasInAdd, boolean[] wasInSubtract) {
 		
 		if (romanNumeral == null)
 			throw new NullPointerException("Roman numeral can't be null");
@@ -325,42 +326,58 @@ public class Translator {
 		int initBaseRank = ROMAN_NUM_RANK.get(initBase);
 		
 		if (minuend != null) {
-			checkSubtractionRules(minuend, initBase, used);
+			checkSubtractionRules(minuend, initBase, wasInSubtract);
 			int minuendRank = ROMAN_NUM_RANK.get(minuend);
-			thisValue = RANK_TO_VAL[minuendRank] - 
-						RANK_TO_VAL[initBaseRank];
+			thisValue = RANK_TO_VAL[minuendRank] - RANK_TO_VAL[initBaseRank];
 			recurseNum = romanNumeral.substring(numInRow+1);
-			used[initBaseRank][1] = true; // now can't be used in a subtraction
-			used[minuendRank][1] = true; // now can't be used a subtraction
-			used[minuendRank][0] = true; // now can't be used on its own
+			wasInSubtract[initBaseRank] = true;
+			wasInSubtract[minuendRank] = true;
+			wasInAdd[minuendRank] = true;
 		}
 		else {
-			checkAdditionRules(initBase, used);
+			checkAdditionRules(initBase, wasInAdd);
 			recurseNum = romanNumeral.substring(numInRow);	
-			thisValue = numInRow*RANK_TO_VAL[initBaseRank];
-			used[initBaseRank][0] = true; // now can't be used on its own
+			thisValue = numInRow * RANK_TO_VAL[initBaseRank];
+			wasInAdd[initBaseRank] = true;
 		}
 
-		// recurse with updated total and usage stats
-		return thisValue+romanNumToArabicRecurse(recurseNum, used);
+		return thisValue+romanNumToArabicRecurse(recurseNum, 
+												 wasInAdd, 
+												 wasInSubtract);
 	}
 	
-	private static void checkAdditionRules(String baseNum, boolean used[][]) {
+	/**
+	 * 
+	 * @param baseNum is the 
+	 * @param wasInAdd: an boolean where wasInAdd[rank] is true if 
+	 * the roman numeral of that rank has been used in an addition
+	 */
+	private static void checkAdditionRules(String baseNum, boolean[] wasInAdd){
 		
-		if (used[ROMAN_NUM_RANK.get(baseNum)][0])
+		if (wasInAdd[ROMAN_NUM_RANK.get(baseNum)])
 			throw new IllegalArgumentException("Roman numeral is not "
 					+ "well formed: '" + baseNum + "' appears too many times");
 	}
 	
+	/**
+	 * Throw exception if the minuend and subtractor violate roman numeral
+	 * subtraction rules given previous usage.
+	 * 
+	 * @param minuend
+	 * @param subtractor
+	 * @param wasInSubtract: an boolean where wasInSubtract[rank] is true if 
+	 * the roman numeral of that rank has been used in a subtraction
+	 * an addition. 
+	 */
 	private static void checkSubtractionRules(String minuend, 
-			String subtractor, boolean used[][]) {
+			String subtractor, boolean[] wasInSubtract) {
 		
-		if (used[ROMAN_NUM_RANK.get(subtractor)][1])
+		if (wasInSubtract[ROMAN_NUM_RANK.get(subtractor)])
 			throw new IllegalArgumentException("Roman numeral is "
 					+ "not well formed: '" + subtractor + "' was "
 					+ "already used as a subtractor.");
 		
-		if (used[ROMAN_NUM_RANK.get(minuend)][1])
+		if (wasInSubtract[ROMAN_NUM_RANK.get(minuend)])
 			throw new IllegalArgumentException("Roman numeral is "
 					+ "not well formed: '" + minuend + "' was "
 					+ "already used as a minuend.");
