@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import notes.CommodityDecl;
+import notes.CompIntergalNumDecl;
 
 /**
  * Bookkeep information about prices of various commodities.
@@ -94,6 +95,46 @@ public class Ledger {
 		if (cDec == null)
 			throw new IllegalArgumentException("cDec cannot be null");
 		
+		PricePair prices = calculateUnitPrices(cDec);
+		writeUnitPrices(cDec.getCommodity(), prices, overwrite);
+	}
+	
+	/**
+	 * Write unit prices of a commodity to the ledger.
+	 * 
+	 * @param commodity is a string: the commodity to write prices for
+	 * @param prices is a PricePair: the unit price of the commodity in
+	 * both Credits and intergalactic numerals
+	 * @param overwrite is a boolean: whether to overwrite a price
+	 * if one is already in the ledger for this commodity
+	 */
+	private void writeUnitPrices(String commodity, 
+			PricePair prices, boolean overwrite) {
+		
+		if (overwrite) {
+			priceBook.put(commodity, prices);
+		}
+		else {
+			// if not overwrite, only add if null
+			if (prices.getCreditPrice() != null)
+				prices.setCreditPrice(prices.getCreditPrice());
+			if (prices.getIntergalPrice() != null)
+				prices.setIntergalPrice(prices.getIntergalPrice());
+			priceBook.put(commodity, prices);
+		}
+	}
+	
+	/**
+	 * Calculate the unit prices of the commodity in the given commodity
+	 * declaration.
+	 * 
+	 * @param cDec is a CommodityDecl: a statement about the price of
+	 * a certain amount of a commodity
+	 * @return a PricePair: the unit price of the given commodity in both
+	 * intergalactic numerals and Credits
+	 */
+	private PricePair calculateUnitPrices(CommodityDecl cDec) {
+	
 		String commodity = cDec.getCommodity();
 		int aPrice = cDec.getArabicNum();
 		String iAmnt = cDec.getIntergalNum();
@@ -108,20 +149,8 @@ public class Ledger {
 			iUnitPrice = "unit price outside valid range of intergal numerals";
 		}
 		
-		PricePair prices = priceBook.containsKey(commodity) ? 
-			priceBook.get(commodity) : new PricePair(aUnitPrice, iUnitPrice);
-			
-		if (overwrite) {
-			priceBook.put(commodity, prices);
-		}
-		else {
-			// if not overwrite, only add if null
-			if (prices.getCreditPrice() != null)
-				prices.setCreditPrice(aUnitPrice);
-			if (prices.getIntergalPrice() != null)
-				prices.setIntergalPrice(iUnitPrice);
-			priceBook.put(commodity, prices);
-		}
+		return priceBook.containsKey(commodity) ? 
+				priceBook.get(commodity) : new PricePair(aUnitPrice, iUnitPrice);
 	}
 	
 	/**
@@ -129,7 +158,7 @@ public class Ledger {
 	 */
 	class PricePair {
 		
-		private BigDecimal creditPrice; // money: minimize precision lost :)
+		private BigDecimal creditPrice;
 		private String intergalPrice;
 		
 		/**
@@ -160,7 +189,8 @@ public class Ledger {
 		}
 		
 		public String toString() {
-			return "(Intergal: " + intergalPrice + ", Credits: " + creditPrice + ")";
+			return "(Intergal: " + intergalPrice + ", Credits: " + 
+					creditPrice + ")";
 		}
 	}
 }
