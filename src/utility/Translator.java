@@ -302,106 +302,138 @@ public class Translator {
 		// base case is empty string
 		if (romanNumeral.length() < 1) return 0;
 		
-		// check if next portion of given romanNumeral satisfies rules
+		// plan: check if next portion of given romanNumeral satisfies rules
 		// add to total and recurse if so, throw exception if not
-		String firstBase = romanNumeral.substring(0, 1);
+		String initBase = romanNumeral.substring(0, 1);
 		
-		if (!ROMAN_NUM_RANK.containsKey(firstBase)) {
-			throw new IllegalArgumentException("Roman numeral is not "
-					+ "well formed: '" + firstBase + "' is not a "
-					+ "base roman numeral.");			
-		}
+		checkBaseRomanNumeral(initBase);
 		
+		// get number of initial numeral in a row
 		int numInRow = 1;
 		while (numInRow < romanNumeral.length() &&
-		       romanNumeral.charAt(numInRow) == firstBase.charAt(0))
+		       romanNumeral.charAt(numInRow) == initBase.charAt(0))
 			numInRow++;
 		
-		// check against roman numeral rules
+		checkRepeatRules(numInRow, initBase);
 		
-		// check repeat limits
-		if (numInRow > 3)
-			throw new IllegalArgumentException("Roman numeral is not well "
-					+ "formed: '" + firstBase + "' appears more than three"
-					+ " times in succession.");
+		// determine whether a subtraction or addition
+		String minuend = getMinuend(romanNumeral);
 		
-		if (NO_REPEAT_SET.contains(firstBase)) {
+		// check against appropriate math operation rules and do the operation
+		String recurseNum = "";
+		int thisValue = 0;
+		int initBaseRank = ROMAN_NUM_RANK.get(initBase);
+		
+		if (minuend != null) {
+			checkSubtractionRules(minuend, initBase, used);
+			int minuendRank = ROMAN_NUM_RANK.get(minuend);
+			thisValue = RANK_TO_VAL[minuendRank] - 
+						RANK_TO_VAL[initBaseRank];
+			recurseNum = romanNumeral.substring(numInRow+1);
+			used[initBaseRank][1] = true; // now can't be used in a subtraction
+			used[minuendRank][1] = true; // now can't be used a subtraction
+			used[minuendRank][0] = true; // now can't be used on its own
+		}
+		else {
+			checkAdditionRules(initBase, used);
+			recurseNum = romanNumeral.substring(numInRow);	
+			thisValue = numInRow*RANK_TO_VAL[initBaseRank];
+			used[initBaseRank][0] = true; // now can't be used on its own
+		}
+
+		// recurse with updated total and usage stats
+		return thisValue+romanNumToArabicRecurse(recurseNum, used);
+	}
+	
+	private static void checkAdditionRules(String baseNum, boolean used[][]) {
+		
+		if (used[ROMAN_NUM_RANK.get(baseNum)][0])
+			throw new IllegalArgumentException("Roman numeral is not "
+					+ "well formed: '" + baseNum + "' appears too many times");
+	}
+	
+	private static void checkSubtractionRules(String minuend, 
+			String subtractor, boolean used[][]) {
+		
+		if (used[ROMAN_NUM_RANK.get(subtractor)][1])
+			throw new IllegalArgumentException("Roman numeral is "
+					+ "not well formed: '" + subtractor + "' was "
+					+ "already used as a subtractor.");
+		
+		if (used[ROMAN_NUM_RANK.get(minuend)][1])
+			throw new IllegalArgumentException("Roman numeral is "
+					+ "not well formed: '" + minuend + "' was "
+					+ "already used as a minuend.");
+		
+		if (!MINUENDS.get(subtractor).contains(minuend))
+			throw new IllegalArgumentException("Roman numeral is "
+					+ "not well formed: '" + subtractor + "' can only be"
+					+ " subtracted from " + MINUENDS.get(subtractor));
+	}
+	
+	/**
+	 * Return the minuend if the initial two base roman numerals of the given
+	 * numeral string makes a subtraction, null if not.
+
+	 * @param romanNumeralStr
+	 * @return a string: the minuend of the subtraction operation if there is 
+	 * a subtraction operation at the start of the given roman numeral
+	 * string, null otherwise
+	 */
+	private static String getMinuend(String romanNumeralStr) {
+		
+		if (romanNumeralStr.length() < 2) return null;
+		
+		String subtractor = romanNumeralStr.substring(0, 1);
+		
+		if (!SUBTRACTOR_SET.contains(subtractor)) return null;
+				
+		String minuend = romanNumeralStr.substring(1, 2);
+		checkBaseRomanNumeral(minuend);
+
+		if (ROMAN_NUM_RANK.get(minuend) <= ROMAN_NUM_RANK.get(subtractor))
+			return null; // minuend must be greater than subtractor
+		
+		return minuend;
+	}
+	
+	/**
+	 * Throw exception if the given numeral is a base Roman numeral.
+	 * 
+	 * @param numeral
+	 * @throws an IllegalArgumentException if the given string is not
+	 * a base Roman numeral
+	 */
+	private static void checkBaseRomanNumeral(String numeral) {
+		if (!ROMAN_NUM_RANK.containsKey(numeral)) {
+			throw new IllegalArgumentException("Roman numeral is not "
+					+ "well formed: '" + numeral + "' is not a "
+					+ "base roman numeral.");			
+		}
+	}
+	
+	/**
+	 * Throw exception if the given roman numeral repeats 
+	 * too many times in a row.
+	 * 
+	 * @param numInRow is an int: the number of times the given numeral repeats
+	 * @param numeral is a String: the base roman numeral to check
+	 * @throws IllegalArgumentException if the roman numeral repeats too
+	 * many times
+	 */
+	private static void checkRepeatRules(int numInRow, String numeral) {
+		
+		if (NO_REPEAT_SET.contains(numeral)) {
 			if (numInRow > 1)
 				throw new IllegalArgumentException("Roman numeral is not "
-						+ "well formed: '" + firstBase + "' appears "
+						+ "well formed: '" + numeral + "' appears "
 						+ "more than once.");
 		}
 		
-		// check if a subtraction
-		int firstBaseRank = ROMAN_NUM_RANK.get(firstBase);
-		int firstBaseVal = RANK_TO_VAL[firstBaseRank];
-		String secondBase = null;
-		int secondBaseRank = -1;
-		int secondBaseVal = -1;
-		if (SUBTRACTOR_SET.contains(firstBase)) {
-			if (numInRow == 1 && romanNumeral.length() > 1) {
-				secondBase = romanNumeral.substring(1, 2);
-				
-				if (!ROMAN_NUM_RANK.containsKey(secondBase)) {
-					throw new IllegalArgumentException("Roman numeral is not "
-							+ "well formed: '" + secondBase + "' is not a "
-							+ "base roman numeral.");			
-				}
-				
-				secondBaseRank = ROMAN_NUM_RANK.get(secondBase);
-				secondBaseVal = RANK_TO_VAL[secondBaseRank];
-				if (secondBaseRank < firstBaseRank)
-					secondBase = null; // not a subtraction
-			}
-		}
-		
-		// now check against subtraction rules (if necessary) and
-		// any previously processed numerals
-		// then, set the values for the next recursive call.
-		String subRomanNum = "";
-		int thisValue = 0;
-		if (secondBase != null) {
-			
-			if (used[firstBaseRank][1])
-				throw new IllegalArgumentException("Roman numeral is "
-						+ "not well formed: '" + firstBase + "' was "
-						+ "already used as a subtractor.");
-			
-			if (used[secondBaseRank][1])
-				throw new IllegalArgumentException("Roman numeral is "
-						+ "not well formed: '" + secondBase + "' was "
-						+ "already used as a minuend.");
-			
-			if (MINUENDS.get(firstBase).contains(secondBase)) {
-				
-				thisValue = secondBaseVal-firstBaseVal;
-				subRomanNum = romanNumeral.substring(numInRow+1);
-				
-				// subtractor and minuend can't be used in another subtraction
-				used[firstBaseRank][1] = true;
-				used[secondBaseRank][1] = true;
-				// a minuend can't be used on its own after used as minuend
-				used[secondBaseRank][0] = true; 
-			}
-			else {
-				throw new IllegalArgumentException("Roman numeral is "
-						+ "not well formed: '" + firstBase + "' can only be"
-						+ " subtracted from " + MINUENDS.get(firstBase));
-			}
-		}
-		else {
-			
-			if (used[firstBaseRank][0])
-				throw new IllegalArgumentException("Roman numeral is not "
-						+ "well formed: '" + firstBase + "' can't be used "
-						+ "starting at " + romanNumeral);
-			
-			subRomanNum = romanNumeral.substring(numInRow);	
-			thisValue = numInRow*firstBaseVal;
-			used[firstBaseRank][0] = true;
-		}
-
-		return thisValue+romanNumToArabicRecurse(subRomanNum, used);
+		if (numInRow > 3)
+			throw new IllegalArgumentException("Roman numeral is not well "
+					+ "formed: '" + numeral + "' appears more than three"
+					+ " times in succession.");
 	}
 	
 	/**
