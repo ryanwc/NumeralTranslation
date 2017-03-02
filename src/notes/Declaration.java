@@ -1,4 +1,4 @@
-package app;
+package notes;
 
 /**
  * Blueprint for a declaration, which is a type of parsed note.

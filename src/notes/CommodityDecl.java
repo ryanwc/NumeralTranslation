@@ -1,4 +1,4 @@
-package app;
+package notes;
 
 /**
  * Hold all relevant information about a commodity declaration from notes

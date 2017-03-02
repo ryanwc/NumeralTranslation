@@ -1,0 +1,6 @@
+*.pyc
+.DS_Store
+MyNotes/
+bin/
+.project
+.settings

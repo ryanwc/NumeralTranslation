@@ -1,8 +1,10 @@
-package app;
+package utility;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+
+import notes.CommodityDecl;
 
 /**
  * Bookkeep information about prices of various commodities.

@@ -8,6 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import notes.BaseIntergalNumDecl;
+import notes.CommodityDecl;
+import notes.CompIntergalNumDecl;
+import notes.ParsedNote;
+import notes.Query;
+import utility.Ledger;
+import utility.Translator;
+
 /**
  * Process notes about intergalactic commodity markets; part of the 
  * Merchant's Guide to the Galaxy.

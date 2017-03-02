@@ -1,4 +1,4 @@
-package app;
+package notes;
 
 /**
  * Blueprint to storing and accessing metadata from a single line of notes

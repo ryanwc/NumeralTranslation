@@ -1,4 +1,4 @@
-package app;
+package notes;
 
 /**
  * Hold all relevant information about a base intergalactic numeral 

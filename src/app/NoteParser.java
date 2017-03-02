@@ -5,6 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import notes.BaseIntergalNumDecl;
+import notes.CommodityDecl;
+import notes.CompIntergalNumDecl;
+import notes.ParsedNote;
+import notes.Query;
+import notes.UnknownNote;
+import utility.Translator;
+
 /**
  * Parse notes about the intergalactic commodity markets. 
  * 

@@ -1,4 +1,4 @@
-package app;
+package notes;
 
 /**
  * Store metadata from a parsed note (single line of notes) of unknown type.

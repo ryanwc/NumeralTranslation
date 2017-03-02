@@ -13,6 +13,8 @@ import java.util.Map;
 import org.junit.Test;
 
 import app.*;
+import notes.ParsedNote;
+import utility.Translator;
 
 /**
  * Unit test processing notes about intergalactic commodity markets.

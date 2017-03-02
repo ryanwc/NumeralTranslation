@@ -5,6 +5,10 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Map;
 
+import notes.Query;
+import utility.Ledger;
+import utility.Translator;
+
 /**
  * Handle queries regarding unit conversions and prices of various commodities
  * in the intergalactic market.
@@ -46,8 +50,14 @@ public class QueryHandler {
 	public void answer(Query q) {
 		
 		if (!isWellFormed(q)) {
-			System.out.println("I don't know what '" + q.getNote() + "' "
+			if (q.getNote().equals("how much wood could a woodchuck chuck "
+					+ "if a woodchuck could chuck wood ?"))
+				System.out.println("I have no idea what you are "
+						+ "talking about");
+			else {
+				System.out.println("I don't know what '" + q.getNote() + "' "
 					+ "is trying to ask.");
+			}
 			return;
 		}
 		
@@ -91,7 +101,8 @@ public class QueryHandler {
 	private void handleManyQ(Query q) {
 		// format to show decimal only if necessary
 		try {
-			int aCommAmnt = translator.intergalNumToArabic(q.getIntergalNum());
+			int aCommAmnt = 
+					translator.intergalNumToArabic(q.getIntergalNum());
 			BigDecimal aCommPrice = ledger.getCreditPrice(q.getCommodity()).
 					multiply(new BigDecimal(aCommAmnt));
 			String answer = q.getIntergalNum() + " " + q.getCommodity() 
@@ -121,36 +132,45 @@ public class QueryHandler {
 		String[] components = q.getComponents();
 		
 		if (components.length < 4) return false;
-		if (!components[0].equals("how")) return false;		
-		String qWord = components[1];
+		if (!q.getComponents()[0].equals("how")) return false;	
+		
+		String qWord = components[1];		
 		
 		if (!qWord.equals("much") && !qWord.equals("many")) return false;
-	
-		// will need to check if a cluster is intergal num
-		Map<String, Integer> intergalNumRank = translator.getIntergalNumRank();
+		if (!isWellFormedQType(q, components, qWord)) return false;
 		
-		if (qWord.equals("much")) {
+		return true;
+	}
+	
+	private boolean isWellFormedQType(Query q, String[] qComponents, 
+			String qType) {
+		
+		Map<String, Integer> intergalNumRank = 
+				translator.getIntergalNumRank();		
+		
+		if (qType.equals("much")) {
 			// it's a 'much' question, with form 'how much is [intergalNum]?'
-			if (!components[2].equals("is")) return false;
+			if (!qComponents[2].equals("is")) return false;
 
 			for (int i = 3; i < 3+q.getIntergalNumLength(); i++) {
-				if (!intergalNumRank.containsKey(components[i]))
+				if (!intergalNumRank.containsKey(qComponents[i]))
 					return false;
 			}
 		}
 		else {
 			// it's a 'many' question, 
 			// with form 'how many Credits is [intergalNum] [commodity]?'
-			if (!components[2].equals("Credits")) return false;
+			if (!qComponents[2].equals("Credits")) return false;
 
-			if (!components[3].equals("is")) return false;
+			if (!qComponents[3].equals("is")) return false;
 			
 			for (int i = 4; i < 4+q.getIntergalNumLength(); i++) {
-				if (!intergalNumRank.containsKey(components[i]))
+				if (!intergalNumRank.containsKey(qComponents[i]))
 					return false;
 			}
 			
-			if (!ledger.getPriceBook().containsKey(components[components.length-2]))
+			if (!ledger.getPriceBook().
+					containsKey(qComponents[qComponents.length-2]))
 				return false;
 		}
 		
