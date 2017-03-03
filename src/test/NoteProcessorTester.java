@@ -68,9 +68,8 @@ public class NoteProcessorTester {
             ex.printStackTrace();
         }
     	
-    	// basic tests
-        Map<String, List<ParsedNote>> parsedNotes = 
-        		parser.parseNotes(notes);
+    	// basic tests 
+        parser.parseNotes(notes);
         
         /*
     	for (Integer type : parsedNotes.keySet()) {

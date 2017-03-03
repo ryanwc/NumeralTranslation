@@ -42,11 +42,29 @@ import utility.Translator;
 public class NoteProcessor {
 
 	List<String> rawNotes;
-	Map<String, List<ParsedNote>> parsedNotes;
 	NoteParser parser;
 	Ledger ledger;
 	QueryHandler qHandler;
 	Translator translator;
+	
+	/**
+	 * Create a new NoteProcessor.
+	 * 
+	 * @param notes is a list of strings: the raw notes -- lines from a 
+	 * text file -- to process.
+	 * @throws IllegalArgumentException if notes is null
+	 */
+	public NoteProcessor(List<String> notes) {
+		
+		if (notes == null)
+			throw new IllegalArgumentException("notes canont be null");
+		
+		this.rawNotes = notes;
+		this.parser = new NoteParser();
+		this.translator = new Translator();
+		this.ledger = new Ledger(translator);
+		this.qHandler = new QueryHandler(translator, ledger);
+	}
 	
 	/**
 	 * Begin a program that:
@@ -89,80 +107,24 @@ public class NoteProcessor {
         }
     	
 		NoteProcessor processor = new NoteProcessor(notes);
-		
-		// parse the notes
-        processor.parsedNotes = processor.parser.parseNotes(notes);
-        
-        List<ParsedNote> pNotes;
-        
-        // send base intergalactic numeral declarations to the translator
-        pNotes = processor.parsedNotes.get("BaseIntergalNumDecl");
-        if (pNotes != null ) {
-	        for (ParsedNote pNote : pNotes) {
-	        	if (pNote instanceof BaseIntergalNumDecl) {
-	        		BaseIntergalNumDecl dec = ((BaseIntergalNumDecl)pNote);
-	        		processor.translator.
-	        			setIntergalToRomanValue(dec.getBaseIntergalNum(), 
-	        					dec.getBaseRomanNum());
-	        	}
-	        }
-        }
-        
-        // send composite intergal numeral declarations to the translator
-        pNotes = processor.parsedNotes.get("CompIntergalNumDecl");
-        if (pNotes != null) {
-	        for (ParsedNote pNote : pNotes) {
-	        	if (pNote instanceof CompIntergalNumDecl) {
-	        		CompIntergalNumDecl dec = ((CompIntergalNumDecl)pNote);
-	        		String[] bases = dec.getIntergalNum().split(" ");
-	        		String romanNum = dec.getRomanNum();
-	        		for (int i = 0; i < bases.length; i++)
-	        			processor.translator.setIntergalToRomanValue(bases[i],
-	        					romanNum.substring(i, i+1));
-	        	}
-	        }
-        }
-        
-        // send commodity declarations to the ledger
-        pNotes = processor.parsedNotes.get("CommodityDecl");
-        if (pNotes != null) {
-	        for (ParsedNote pNote : pNotes) {
-	        	if (pNote instanceof CommodityDecl) {
-	        		CommodityDecl cDec = ((CommodityDecl) pNote);
-	        		// overwrite price
-	            	processor.ledger.recordCommDecl(cDec, true);
-	        	}
-	        }
-        }
-        
-        // handle any queries
-        pNotes = processor.parsedNotes.get("Query");
-        if (pNotes != null) {
-	        for (ParsedNote pNote : pNotes) {
-	        	if (pNote instanceof Query) {
-	        		Query q = ((Query)pNote);
-	        		processor.qHandler.answer(q);
-	        	}
-	        }
-        }
+        processor.parser.parseNotes(notes);
+        processor.makeDeclarations();
+        processor.handleQueries();
 	}
 	
-	/**
-	 * Create a new NoteProcessor.
-	 * 
-	 * @param notes is a list of strings: the raw notes -- lines from a 
-	 * text file -- to process.
-	 * @throws IllegalArgumentException if notes is null
-	 */
-	public NoteProcessor(List<String> notes) {
+	public void makeDeclarations() {
 		
-		if (notes == null)
-			throw new IllegalArgumentException("notes canont be null");
-		
-		this.rawNotes = notes;
-		this.parser = new NoteParser();
-		this.translator = new Translator();
-		this.ledger = new Ledger(translator);
-		this.qHandler = new QueryHandler(translator, ledger);
+        for (BaseIntergalNumDecl bDec : parser.getBaseIntergalNumDecs())
+    		translator.setIntergalToRomanValue(bDec);
+        
+        for (CompIntergalNumDecl compDec : parser.getCompIntergalNumDecs())
+			translator.setIntergalToRomanValue(compDec);
+        
+        for (CommodityDecl cDec : parser.getCommodityDecs())
+            ledger.recordCommDecl(cDec, true);
+	}
+	
+	public void handleQueries() {
+        for (Query q : parser.getQueries()) qHandler.answer(q);
 	}
 }

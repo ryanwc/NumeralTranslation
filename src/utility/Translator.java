@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import notes.BaseIntergalNumDecl;
+import notes.CompIntergalNumDecl;
+
 import java.util.HashSet;
 
 /**
@@ -74,6 +78,46 @@ public class Translator {
 		this.intergalNumRank = new HashMap<String, Integer>();
 		this.rankToRomanNum = new String[ROMAN_NUM_RANK.size()];
 		this.numPairs = 0;
+	}
+	
+	/**
+	 * Set the value of an intergalactic unit to a base roman numeral.
+	 * 
+	 * Allows only one-to-one mapping.
+	 * 
+	 * @param compDec is a BaseIntergalNumDecl: the base declaration
+	 * to enter into the translator's knowledge
+	 * @throws IllegalArgumentException if the roman numeral in the declaration
+	 * is not valid or if the base intergalactic numeral is the is the empty 
+	 * string, and NullPointerException if either of these are null	
+	 */
+	public void setIntergalToRomanValue(BaseIntergalNumDecl bDec) {
+		setIntergalToRomanValue(bDec.getBaseIntergalNum(), 
+				bDec.getBaseRomanNum());
+	}
+
+	/**
+	 * Set the value of an intergalactic unit to a base roman numeral.
+	 * 
+	 * Allows only one-to-one mapping.
+	 * 
+	 * @param compDec is a CompIntergalNumDecl: the composite declaration
+	 * to enter into the translator's knowledge
+	 * @throws IllegalArgumentException if the roman numeral in the declaration
+	 * is not valid or if any of the base intergalactic numerals are the
+	 * is the empty string, and NullPointerException if any of these components
+	 * are null
+	 */
+	public void setIntergalToRomanValue(CompIntergalNumDecl compDec) {
+		
+		if (compDec == null)
+			throw new NullPointerException("Composite declaration "
+					+ "can't be null");
+		
+		String[] bases = compDec.getIntergalNum().split(" ");
+		String romanNum = compDec.getRomanNum();
+		for (int i = 0; i < bases.length; i++)
+			setIntergalToRomanValue(bases[i], romanNum.substring(i, i+1));
 	}
 	
 	/**

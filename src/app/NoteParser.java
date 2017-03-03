@@ -21,35 +21,81 @@ import utility.Translator;
  */
 public class NoteParser {
 	
+	private List<String> notes;
+	private List<BaseIntergalNumDecl> baseIntergalNumDecs;
+	private List<CompIntergalNumDecl> compIntergalNumDecs;
+	private List<CommodityDecl> commodityDecs;
+	private List<Query> queries;
+	private List<UnknownNote> unknownNotes;
+	private Map<Class, List<? extends ParsedNote>> pNotes;
+	
 	/**
-	 * Parses information about the intergalactic commodity markets.
-	 * Returns organized, parsed notes.
+	 * Construct a new NoteParser.
+	 */
+	public NoteParser() {
+		this.baseIntergalNumDecs = new ArrayList<BaseIntergalNumDecl>();
+		this.compIntergalNumDecs = new ArrayList<CompIntergalNumDecl>();
+		this.commodityDecs = new ArrayList<CommodityDecl>();
+		this.queries = new ArrayList<Query>();
+		this.unknownNotes = new ArrayList<UnknownNote>();
+		this.pNotes = new HashMap<Class, List<? extends ParsedNote>>();
+	}
+	
+	/**
+	 * Parses and stores information about the intergalactic commodity markets.
 	 * 
 	 * @param notes is a list of strings where each string is a line
 	 * from intergalactic commodity notes
-	 * @return a map of {String: List<ParsedNote>}, where List<ParsedNote>
-	 * is the list of ParsedNotes that have the type String.
 	 */
-	public Map<String, List<ParsedNote>> parseNotes(List<String> notes) {
+	public void parseNotes(List<String> notes) {
 		
-		Map<String, List<ParsedNote>> parsedNotes = 
-				new HashMap<String, List<ParsedNote>>();
+		this.notes = notes; // store the notes
 		
-		// parse each given note and group with like notes
-		List<ParsedNote> similarNotes;
-		ParsedNote parsedNote;
-		String noteType;
-		for (String note : notes) {
-			parsedNote = parse(note);
-			noteType = parsedNote.getClass().getSimpleName();
-			if (!parsedNotes.containsKey(noteType))
-				parsedNotes.put(noteType, new ArrayList<ParsedNote>());
-			similarNotes = parsedNotes.get(noteType);
-			similarNotes.add(parsedNote);
-			parsedNotes.put(noteType, similarNotes);
+		// parse and sort the notes
+		for (String note : notes) sortNote(parse(note));
+		
+		// put read-only lists in map for easy bulk transfer
+		pNotes.put(BaseIntergalNumDecl.class, baseIntergalNumDecs);
+		pNotes.put(CompIntergalNumDecl.class, compIntergalNumDecs);
+		pNotes.put(CommodityDecl.class, commodityDecs);
+		pNotes.put(Query.class, queries);
+		pNotes.put(UnknownNote.class, unknownNotes);
+	}
+	
+	/**
+	 * Add a parsed note to list of like notes.
+	 * 
+	 * @param pNote is a ParsedNote: the one to add
+	 * @return true if the note was added, false otherwise
+	 */
+	public boolean sortNote(ParsedNote pNote) {
+
+		if (pNote instanceof BaseIntergalNumDecl) {
+			baseIntergalNumDecs.add((BaseIntergalNumDecl)pNote);
+			return true;
 		}
 		
-		return parsedNotes;
+		if (pNote instanceof CompIntergalNumDecl) {
+			compIntergalNumDecs.add((CompIntergalNumDecl)pNote);
+			return true;
+		}
+		
+		if (pNote instanceof CommodityDecl) {
+			commodityDecs.add((CommodityDecl)pNote);		
+			return true;
+		}
+		
+		if (pNote instanceof Query) {
+			queries.add((Query)pNote);			
+			return true;
+		}
+		
+		if (pNote instanceof UnknownNote) {
+			unknownNotes.add((UnknownNote)pNote);	
+			return true;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -83,7 +129,7 @@ public class NoteParser {
 		UnknownNote uNote = new UnknownNote(note);
 		int numComponents = uNote.getComponents().length;
 		
-		// parse the note (set its metadata)
+		// parse the note (set its metadata and identify it)
 		for (int i = 0; i < numComponents; i++) {
 			if (checkAndSetIs(uNote, i)) continue;
 			if (checkAndSetCredits(uNote, i)) continue;
@@ -556,5 +602,29 @@ public class NoteParser {
 	 */
 	public boolean isQuery(UnknownNote note) {
 		return note.getqPos() == note.getComponents().length-1;
+	}
+	
+	public Map<Class, List<? extends ParsedNote>> getParsedNotes() {
+		return pNotes;
+	}
+	
+	public List<BaseIntergalNumDecl> getBaseIntergalNumDecs() {
+		return baseIntergalNumDecs;
+	}
+	
+	public List<CompIntergalNumDecl> getCompIntergalNumDecs() {
+		return compIntergalNumDecs;
+	}
+	
+	public List<CommodityDecl> getCommodityDecs() {
+		return commodityDecs;
+	}
+	
+	public List<Query> getQueries() {
+		return queries;
+	}
+	
+	public List<UnknownNote> getUnkownNotes() {
+		return unknownNotes;
 	}
 }
