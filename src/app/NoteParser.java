@@ -627,4 +627,8 @@ public class NoteParser {
 	public List<UnknownNote> getUnkownNotes() {
 		return unknownNotes;
 	}
+	
+	public List<String> getNotes() {
+		return notes;
+	}
 }

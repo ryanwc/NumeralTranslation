@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import notes.CommodityDecl;
-import notes.CompIntergalNumDecl;
 
 /**
  * Bookkeep information about prices of various commodities.

@@ -6,12 +6,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import notes.BaseIntergalNumDecl;
 import notes.CommodityDecl;
 import notes.CompIntergalNumDecl;
-import notes.ParsedNote;
 import notes.Query;
 import utility.Ledger;
 import utility.Translator;
