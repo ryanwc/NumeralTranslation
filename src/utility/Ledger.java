@@ -109,18 +109,19 @@ public class Ledger {
 	 * if one is already in the ledger for this commodity
 	 */
 	private void writeUnitPrices(String commodity, 
-			PricePair prices, boolean overwrite) {
+			PricePair unitPrices, boolean overwrite) {
 		
 		if (overwrite) {
-			priceBook.put(commodity, prices);
+			priceBook.put(commodity, unitPrices);
 		}
 		else {
-			// if not overwrite, only add if null
-			if (prices.getCreditPrice() != null)
-				prices.setCreditPrice(prices.getCreditPrice());
-			if (prices.getIntergalPrice() != null)
-				prices.setIntergalPrice(prices.getIntergalPrice());
-			priceBook.put(commodity, prices);
+			// only add if book price null
+			PricePair bookPrices = priceBook.get(commodity);
+			if (bookPrices.getCreditPrice() == null)
+				bookPrices.setCreditPrice(unitPrices.getCreditPrice());
+			if (bookPrices.getIntergalPrice() == null)
+				bookPrices.setIntergalPrice(unitPrices.getIntergalPrice());
+			priceBook.put(commodity, bookPrices);
 		}
 	}
 	
@@ -135,7 +136,6 @@ public class Ledger {
 	 */
 	private PricePair calculateUnitPrices(CommodityDecl cDec) {
 	
-		String commodity = cDec.getCommodity();
 		int aPrice = cDec.getArabicNum();
 		String iAmnt = cDec.getIntergalNum();
 		int aAmnt = translator.intergalNumToArabic(iAmnt);
@@ -149,8 +149,7 @@ public class Ledger {
 			iUnitPrice = "unit price outside valid range of intergal numerals";
 		}
 		
-		return priceBook.containsKey(commodity) ? 
-				priceBook.get(commodity) : new PricePair(aUnitPrice, iUnitPrice);
+		return new PricePair(aUnitPrice, iUnitPrice);
 	}
 	
 	/**

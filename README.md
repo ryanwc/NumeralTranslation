@@ -10,8 +10,8 @@ This program takes a text file as input. Each line of the text file is either 1)
 
 1. Intergalactic numerals follow “strict” Roman numeral rules, including that they can only represent arabic numerals greater than 0 and less than 4000.
 2. Queries have a “?” at the end, and this “?” is separated from the last word by whitespace.
-4. The input to the program is a string which is the path to a text file, where each line of the file is a note about the markets, with each line formatted exactly as specified in the next assumption.
-5. Notes can take one of five forms:
+3. The input to the program is a string which is the path to a text file, where each line of the file is a note about the markets, with each line formatted exactly as specified in the next assumption.
+4. Notes can take one of five forms:
 	1. Base intergalactic numeral declaration. Statement about which single intergalactic numeral corresponds to which Roman numeral. Takes the form '[base intergal numeral] is [base roman numeral]’.
 	2. Composite intergalactic numeral declaration. Statement about which string of base intergalactic numerals corresponds to which string of Roman numerals. Takes the form ‘[intergal num longer than 1 word] is [roman num longer than 1 char]’.
 	3. Commodity declaration. Specifies the number of units of a commodity in intergal numerals that is worth an arabic numeral amount of Credits. Takes the form '[intergal numeral] [commodity] is [arabic numeral] Credits'.
