@@ -1,4 +1,4 @@
-# Galaxy Merchant Overview
+# Overview
 
 This program translates unknown numerals that follow Roman numeral conventions into arabic numerals. For example, if input text declares "foo" is "X" and "bar" is "I", the program determines "foo foo bar" is "21", "bar foo" is "9", and "bar bar foo" is an ill-formed numeral.
 
@@ -6,33 +6,33 @@ The backstory is this: The user is a merchant that travels across the galaxy sel
 
 This program takes a text file as input. Each line of the text file is either 1) a note about intergalactic numerals or commodity prices, or 2) a query. Queries are questions about intergalactic numerals or commodities (e.g., "how much is foo foo bar ?" or "how many Credits is foo bar Silver?"). The program reads the file and responds to queries through standard output.
 
-# Assumptions about the Input and Intergalactic Numeral System
+# Assumptions about the Numeral System and Input Format
 
 1. Intergalactic numerals follow “strict” Roman numeral rules, including that they can only represent arabic numerals greater than 0 and less than 4000.
 2. Queries have a “?” at the end, and this “?” is separated from the last word by whitespace.
 4. The input to the program is a string which is the path to a text file, where each line of the file is a note about the markets, with each line formatted exactly as specified in the next assumption.
 5. Notes can take one of five forms:
-	1) Base intergalactic numeral declaration. Statement about which single intergalactic numeral corresponds to which Roman numeral. Takes the form '[base intergal numeral] is [base roman numeral]’.
-	2) Composite intergalactic numeral declaration. Statement about which string of base intergalactic numerals corresponds to which string of Roman numerals. Takes the form ‘[intergal num longer than 1 word] is [roman num longer than 1 char]’.
-	3) Commodity declaration. Specifies the number of units of a commodity in intergal numerals that is worth an arabic numeral amount of Credits. Takes the form '[intergal numeral] [commodity] is [arabic numeral] Credits'.
-	4) Query. Contains one '?' -- the very last character on the line -- and is separated from the previous word by a space. Queries come in two forms:
-		A) 'many': 'how many Credits is [intergal numeral] [commodity] ?'
-		B) 'much': 'how much is [intergal numeral] ?'
-	5) Unknown. These are notes that do not conform to types 1-4. They are kept for later analysis and/or classification. For example, a previously unanswerable Query might be answerable when a new declaration is added.
+	1. Base intergalactic numeral declaration. Statement about which single intergalactic numeral corresponds to which Roman numeral. Takes the form '[base intergal numeral] is [base roman numeral]’.
+	2. Composite intergalactic numeral declaration. Statement about which string of base intergalactic numerals corresponds to which string of Roman numerals. Takes the form ‘[intergal num longer than 1 word] is [roman num longer than 1 char]’.
+	3. Commodity declaration. Specifies the number of units of a commodity in intergal numerals that is worth an arabic numeral amount of Credits. Takes the form '[intergal numeral] [commodity] is [arabic numeral] Credits'.
+	4. Query. Contains one '?' -- the very last character on the line -- and is separated from the previous word by a space. Queries come in two forms:
+		1. 'many': 'how many Credits is [intergal numeral] [commodity] ?'
+		2. 'much': 'how much is [intergal numeral] ?'
+	5. Unknown. These are notes that do not conform to types 1-4. They are kept for later analysis and/or classification. For example, a previously unanswerable Query might be answerable when a new declaration is added.
 
 # Design Notes
 
-1. Main goals:
-	A. Translate a unknown numerals that follow roman numeral conventions to arabic numerals.
-	B. Extract and retain as much information as possible about a given set of notes such that the application can easily be extended to support interactive adjustments, exploration, and deductions from incomplete information.
-	C. Provide classes that can be re-used by other applications (e.g., Ledger, Translator).
-2. Hierarchy and Class/Package Design Considerations:
-	A. Delegate discrete pieces of work from main class NoteProcessor to dedicated worker classes with one job (NoteParser, Ledger, Translator, and QueryHandler) to make code manageable and benefit other applications.
-	B. Make a specific note easy to identify, hard to misuse, and share appropriate functionality/fields by extending classes Query, BaseIntergalNumDecl, CompIntergalNumDecl, CommodityDecl, and UnknownNote from Declaration and/or ParsedNote, as appropriate. 
-	C. Make ParsedNote and Declaration abstract to provide common functionality to children while not allowing instantiation.
-	D. Provide inner class to Ledger so it can bookkeep with a tuple of prices.
-	E. Design UnknownNote to hold all interesting data about a note. Later, can convert to other types (if possible).
-	F. Sort classes into packages based on purpose — app for the main purpose of the application, notes for note data, and utility for workhorses that look useful for other applications.
+- Main goals:
+	1. Translate a unknown numerals that follow roman numeral conventions to arabic numerals.
+	2. Extract and retain as much information as possible about a given set of notes such that the application can easily be extended to support interactive adjustments, exploration, and deductions from incomplete information.
+	3. Provide classes that can be re-used by other applications (e.g., Ledger, Translator).
+- Hierarchy and Class/Package Design Considerations:
+	1. Delegate discrete pieces of work from main class NoteProcessor to dedicated worker classes with one job (NoteParser, Ledger, Translator, and QueryHandler) to make code manageable and benefit other applications.
+	2. Make a specific note easy to identify, hard to misuse, and share appropriate functionality/fields by extending classes Query, BaseIntergalNumDecl, CompIntergalNumDecl, CommodityDecl, and UnknownNote from Declaration and/or ParsedNote, as appropriate. 
+	3. Make ParsedNote and Declaration abstract to provide common functionality to children while not allowing instantiation.
+	4. Provide inner class to Ledger so it can bookkeep with a tuple of prices.
+	5. Design UnknownNote to hold all interesting data about a note. Later, can convert to other types (if possible).
+	6. Sort classes into packages based on purpose — app for the main purpose of the application, notes for note data, and utility for workhorses that look useful for other applications.
 
 # For Future Expansion
 
